@@ -1,5 +1,7 @@
 package Lab1.Ex3;
 
+// We could also not define this by sending a String
+
 public class ReplyMsg {
 
     private String email;

@@ -28,7 +28,7 @@ public class ServerActor extends AbstractActor {
 
     private void onGetMsg(GetMsg msg) {
         if (record.containsKey(msg.getName())) {
-            this.getSender().tell(new ReplyMsg(record.get(msg.getName())), getSelf());
+            this.getSender().tell(new ReplyMsg(record.get(msg.getName())), getSelf());      // We could also tell directly a String
         } else {
             this.getSender().tell(new ReplyMsg("Not found"), getSelf());
         }
