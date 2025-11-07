@@ -1,0 +1,16 @@
+package lab1.ex4.messages;
+
+import akka.actor.ActorRef;
+
+public class ConfigMsg extends Msg {
+
+    private ActorRef server;
+
+    public ConfigMsg (ActorRef server) {
+        this.server = server;
+    }
+
+    public ActorRef getServerRef() {
+        return server;
+    }
+}

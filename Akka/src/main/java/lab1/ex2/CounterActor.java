@@ -1,4 +1,4 @@
-package Lab1.Ex2;
+package lab1.ex2;
 
 import akka.actor.AbstractActorWithStash;
 import akka.actor.Props;

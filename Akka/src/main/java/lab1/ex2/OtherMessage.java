@@ -1,4 +1,4 @@
-package Lab1.Ex1;
+package lab1.ex2;
 
 public class OtherMessage {
 

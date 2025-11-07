@@ -1,8 +1,7 @@
-package Lab1.Ex3;
+package lab1.ex3;
 
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
-import com.counter.CounterActor;
 
 public class Main {
 

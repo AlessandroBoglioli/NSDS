@@ -1,7 +1,11 @@
-package Lab1.Ex4;
+package lab1.ex4;
 
 import akka.actor.AbstractActorWithStash;
 import akka.actor.Props;
+import lab1.ex4.messages.ReplyMsg;
+import lab1.ex4.messages.SimpleMsg;
+import lab1.ex4.messages.SleepMsg;
+import lab1.ex4.messages.WakeupMsg;
 
 public class ServerActor extends AbstractActorWithStash {
 

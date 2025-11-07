@@ -1,4 +1,4 @@
-package Lab1.Ex1;
+package lab1.ex2;
 
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
@@ -23,13 +23,8 @@ public class Counter {
 		final ExecutorService exec = Executors.newFixedThreadPool(numThreads);
 
 		for (int i = 0; i < numMessages; i++) {
-			// Type1 of messagees
 			exec.submit(() -> counter.tell(new SimpleMessage(), ActorRef.noSender()));
 			exec.submit(() -> counter.tell(new OtherMessage(), ActorRef.noSender()));
-
-			// Type2 of messages
-			exec.submit(() -> counter.tell(new ModifyMessage(INCREMENT_OP), ActorRef.noSender()));
-			exec.submit(() -> counter.tell(new ModifyMessage(DECREMENT_OP), ActorRef.noSender()));
 		}
 		
 		try {

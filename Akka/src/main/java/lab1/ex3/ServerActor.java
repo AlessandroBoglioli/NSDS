@@ -1,8 +1,7 @@
-package Lab1.Ex3;
+package lab1.ex3;
 
 import akka.actor.AbstractActor;
 import akka.actor.Props;
-import com.counter.CounterActor;
 
 import java.util.HashMap;
 import java.util.Map;

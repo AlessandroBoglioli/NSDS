@@ -1,4 +1,4 @@
-package Lab1.Ex3;
+package lab1.ex3;
 
 // We could also not define this by sending a String
 

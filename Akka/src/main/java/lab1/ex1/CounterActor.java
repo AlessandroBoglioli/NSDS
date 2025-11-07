@@ -1,4 +1,4 @@
-package Lab1.Ex1;
+package lab1.ex1;
 
 import akka.actor.AbstractActor;
 import akka.actor.Props;
