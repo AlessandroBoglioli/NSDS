@@ -10,11 +10,11 @@ import java.time.Duration;
 public class CounterSupervisorActor extends AbstractActor {
 
 	 // #strategy
-    private static SupervisorStrategy strategy =
+    private static final SupervisorStrategy strategy =
         new OneForOneStrategy(
             1, // Max no of retries (We have only one actor to supervision)
             Duration.ofMinutes(1), // Within what time period
-            DeciderBuilder.match(Exception.class, e -> SupervisorStrategy.stop()) // Matching clause and action
+            DeciderBuilder.match(Exception.class, e -> SupervisorStrategy.restart()) // Matching clause and action
                 .build());
 
 	// In the strategy we can also we can also resume the operations since this is a false fault
@@ -22,7 +22,7 @@ public class CounterSupervisorActor extends AbstractActor {
 
     @Override
     public SupervisorStrategy supervisorStrategy() {
-      return strategy;
+      	return strategy;
     }
 
 	public CounterSupervisorActor() {
@@ -35,7 +35,7 @@ public class CounterSupervisorActor extends AbstractActor {
 		          .match(
 		              Props.class,
 		              props -> {
-		                getSender().tell(getContext().actorOf(props), getSelf());
+		                	getSender().tell(getContext().actorOf(props), getSelf());
 		              })
 		          .build();
 	}

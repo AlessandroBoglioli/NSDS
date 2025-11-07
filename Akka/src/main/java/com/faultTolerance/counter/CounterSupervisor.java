@@ -23,6 +23,7 @@ public class CounterSupervisor {
 		final ActorRef supervisor = sys.actorOf(CounterSupervisorActor.props(), "supervisor");
 
 		ActorRef counter;
+
 		try {
 			
 			// Asks the supervisor to create the child actor and returns a reference
@@ -36,13 +37,11 @@ public class CounterSupervisor {
 				counter.tell(new DataMessage(FAULT_OP), ActorRef.noSender());
 
 			// After the restart we do another normal operation
-
 			counter.tell(new DataMessage(NORMAL_OP), ActorRef.noSender());
 
 			sys.terminate();
 
 		} catch (TimeoutException | InterruptedException e1) {
-		
 			e1.printStackTrace();
 		}
 
