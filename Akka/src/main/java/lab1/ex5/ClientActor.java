@@ -1,4 +1,4 @@
-package lab1.ex3;
+package lab1.ex5;
 
 import akka.actor.AbstractActor;
 import akka.actor.ActorRef;

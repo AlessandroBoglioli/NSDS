@@ -1,6 +1,6 @@
-package lab1.ex3;
+package lab1.ex5;
 
-public class PutMsg extends Msg{
+public class PutMsg extends Msg {
 
     private String email;
     private String name;

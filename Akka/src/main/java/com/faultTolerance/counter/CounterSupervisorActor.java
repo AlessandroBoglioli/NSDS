@@ -40,7 +40,7 @@ public class CounterSupervisorActor extends AbstractActor {
 		          .build();
 	}
 
-	static Props props() {
+	public static Props props() {
 		return Props.create(CounterSupervisorActor.class);
 	}
 

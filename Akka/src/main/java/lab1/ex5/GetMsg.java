@@ -1,6 +1,6 @@
-package lab1.ex3;
+package lab1.ex5;
 
-public class GetMsg extends Msg{
+public class GetMsg extends Msg {
 
     private String name;
 
