@@ -6,18 +6,16 @@ import java.util.concurrent.TimeUnit;
 
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
+import lab1.ex2023.messages.ConfigMsg;
+import lab1.ex2023.messages.DispatchLogicMsg;
 import lab1.ex2023.messages.GenerateMsg;
 
 public class SensorDataProcessor {
 
 	public static void main(String[] args) {
 
-		// Number of sensors for testing
 		final int NO_SENSORS = 4;
-		
-		// Number of sensor readings to generate
 		final int SENSING_ROUNDS = 1;
-		
 		final ActorSystem sys = ActorSystem.create("System");
 
 		// Create sensor actors
@@ -27,9 +25,14 @@ public class SensorDataProcessor {
 		}
 
 		// Create dispatcher
-		// final ActorRef dispatcher = ....
+		final ActorRef dispatcher = sys.actorOf(DispatcherActor.props(), "dispatcher");
 
-		// Waiting until system is ready
+		// Configure sensors
+		for (ActorRef t : sensors) {
+			t.tell(new ConfigMsg(dispatcher), ActorRef.noSender());
+		}
+
+		// Waiting for configuration messages to arrive
 		try {
 			TimeUnit.SECONDS.sleep(1);
 		} catch (InterruptedException e1) {
@@ -52,9 +55,9 @@ public class SensorDataProcessor {
 			e1.printStackTrace();
 		}
 
-		// Re-configure dispatcher to use Round Robin
-		// ...
-		
+		// Re-configure dispatcher
+		dispatcher.tell(new DispatchLogicMsg(DispatchLogicMsg.ROUND_ROBIN), ActorRef.noSender());
+
 		// Waiting for dispatcher reconfiguration
 		try {
 			TimeUnit.SECONDS.sleep(1);
@@ -64,7 +67,7 @@ public class SensorDataProcessor {
 		}
 
 		// Generate some more temperature data
-		for (int i = 0; i < SENSING_ROUNDS+1; i++) {
+		for (int i = 0; i < 2; i++) {
 			for (ActorRef t : sensors) {
 				t.tell(new GenerateMsg(), ActorRef.noSender());
 			}
@@ -72,11 +75,9 @@ public class SensorDataProcessor {
 		
 		// A new (faulty) sensor joins the system
 		ActorRef faultySensor = sys.actorOf(TemperatureSensorFaultyActor.props(), "tFaulty");
+		faultySensor.tell(new ConfigMsg(dispatcher), ActorRef.noSender());
 		sensors.add(0, faultySensor);
-		
-		// ...
-		
-		// Wait until system is ready again
+		// Waiting for configuration message to arrive
 		try {
 			TimeUnit.SECONDS.sleep(1);
 		} catch (InterruptedException e1) {
@@ -85,7 +86,7 @@ public class SensorDataProcessor {
 		}
 
 		// Generate some more temperature data
-		for (int i = 0; i < SENSING_ROUNDS+1; i++) {
+		for (int i = 0; i < 2; i++) {
 			for (ActorRef t : sensors) {
 				t.tell(new GenerateMsg(), ActorRef.noSender());
 			}

@@ -3,15 +3,14 @@ package lab1.ex2023.messages;
 import akka.actor.ActorRef;
 
 public class ConfigMsg {
+	
+	private ActorRef dispatcher;
 
-    private ActorRef actor;
-
-    public ConfigMsg(ActorRef actor) {
-        this.actor = actor;
+    public ConfigMsg (ActorRef dispatcher) {
+    	this.dispatcher = dispatcher;
     }
 
-    public ActorRef getActor() {
-        return actor;
-    }
-
+	public ActorRef getDispatcher() {
+		return dispatcher;
+	}
 }

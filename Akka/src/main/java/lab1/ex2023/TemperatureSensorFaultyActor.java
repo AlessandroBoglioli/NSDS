@@ -1,7 +1,9 @@
 package lab1.ex2023;
 
+import akka.actor.AbstractActor;
 import akka.actor.ActorRef;
 import akka.actor.Props;
+import lab1.ex2023.messages.ConfigMsg;
 import lab1.ex2023.messages.GenerateMsg;
 import lab1.ex2023.messages.TemperatureMsg;
 
@@ -11,9 +13,16 @@ public class TemperatureSensorFaultyActor extends TemperatureSensorActor {
 	private final static int FAULT_TEMP = -50;
 
 	@Override
-	public Receive createReceive() {
-		return receiveBuilder().match(GenerateMsg.class, this::onGenerate)
+	public AbstractActor.Receive createReceive() {
+		return receiveBuilder()
+				.match(ConfigMsg.class, this::configure)
+				.match(GenerateMsg.class, this::onGenerate)
 				.build();
+	}
+
+	private void configure(ConfigMsg msg) {
+		System.out.println("TEMPERATURE SENSOR "+self()+": Received configuration message!");
+		this.dispatcher = msg.getDispatcher();
 	}
 
 	private void onGenerate(GenerateMsg msg) {
