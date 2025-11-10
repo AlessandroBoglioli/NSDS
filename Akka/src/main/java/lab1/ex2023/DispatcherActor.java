@@ -12,22 +12,22 @@ import lab1.ex2023.messages.TemperatureMsg;
 
 public class DispatcherActor extends AbstractActor {
 
-	private Map<ActorRef, ActorRef> dispatchMap;
-	private Map<ActorRef, Integer> processorLoad;
+	private final Map<ActorRef, ActorRef> dispatchMap;
+	private final Map<ActorRef, Integer> processorLoad;
 
 	private Iterator<ActorRef> nextProcessor;
 
 	private final static int NO_PROCESSORS = 2;
 
-	private static SupervisorStrategy strategy =
+	private final static SupervisorStrategy strategy =
 			new OneForOneStrategy(
 					1,
 					Duration.ofMinutes(1),
 					DeciderBuilder.match(Exception.class, e -> SupervisorStrategy.resume()).build());
 
 	public DispatcherActor() {
-		dispatchMap = new HashMap<ActorRef, ActorRef>();
-		processorLoad = new HashMap<ActorRef, Integer>();
+		dispatchMap = new HashMap<>();
+		processorLoad = new HashMap<>();
 		for (int i = 0; i < NO_PROCESSORS; i++) {
 			processorLoad.put(getContext().actorOf(SensorProcessorActor.props()), 0);
 		}
@@ -41,7 +41,7 @@ public class DispatcherActor extends AbstractActor {
 
 	@Override
 	public Receive createReceive() {
-		return roundRobin();	// starting with round robin
+		return roundRobin();	// starting with roundrobin
 	}
 
 	private Receive loadBalancer() {
@@ -85,8 +85,8 @@ public class DispatcherActor extends AbstractActor {
 
 	private void dispatchDataLoadBalancer(TemperatureMsg msg) {
 
-		ActorRef targetProcessor = null;
-		if (!dispatchMap.keySet().contains(msg.getSender())) {
+		ActorRef targetProcessor;
+		if (!dispatchMap.containsKey(msg.getSender())) {
 			targetProcessor = findLowLoadProcessor();
 			processorLoad.put(targetProcessor, processorLoad.get(targetProcessor) + 1);
 			dispatchMap.put(msg.getSender(), targetProcessor);
