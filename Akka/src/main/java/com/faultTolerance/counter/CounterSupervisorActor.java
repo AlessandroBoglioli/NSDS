@@ -9,7 +9,7 @@ import java.time.Duration;
 
 public class CounterSupervisorActor extends AbstractActor {
 
-	 // #strategy
+	// #strategy
     private static final SupervisorStrategy strategy =
         new OneForOneStrategy(
             1, // Max no of retries (We have only one actor to supervision)
