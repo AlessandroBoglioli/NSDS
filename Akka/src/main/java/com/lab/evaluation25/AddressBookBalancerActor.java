@@ -23,7 +23,6 @@ public class AddressBookBalancerActor extends AbstractActor {
 
 	@Override
 	public Receive createReceive() {
-		// TODO: Rewrite next line...
 		return receiveBuilder()
 				.match(ConfigMsg.class, this::onConfig)
 				.match(PutMsg.class, this::storeEntry)
@@ -52,109 +51,42 @@ public class AddressBookBalancerActor extends AbstractActor {
 	}
 
 	void routeQuery(GetMsg msg) {
-
 		System.out.println("BALANCER: Received query for name " + msg.getName());
-
-		ResponseMsg reply = null;
-//		if (splitByInitial(msg.getName()) == 0){
-//			try {
-//				Future<Object> waitingForReply0 = ask(worker0, msg, 5000);
-//				reply = (ResponseMsg) waitingForReply0.result(timeout, null);
-//
-//				if (reply == null) {
-//					System.out.println("BALANCER: Primary copy query for name " + msg.getName() + " is resting!");
-//
-//					Future<Object> waitingForReply1 = ask(worker1, msg, 5000);
-//					reply = (ResponseMsg) waitingForReply1.result(timeout, null);
-//
-//					if (reply != null) {
-//
-//						getSender().tell(reply, self());
-//					}
-//					else {
-//						System.out.println("BALANCER: Both copies are resting for name " + msg.getName() + "!");
-//
-//						getSender().tell(new TimeoutMsg(), self());
-//					}
-//				}
-//				else {
-//					getSender().tell(reply, self());
-//				}
-//			} catch (TimeoutException | InterruptedException e1) {
-//				e1.printStackTrace();
-//			}
-//		}
-//		else {
-//			try {
-//				Future<Object> waitingForReply1 = ask(worker1, msg, 5000);
-//				reply = (ResponseMsg) waitingForReply1.result(timeout, null);
-//
-//				if (reply == null) {
-//					System.out.println("BALANCER: Primary copy query for name " + msg.getName() + " is resting!");
-//
-//					Future<Object> waitingForReply0 = ask(worker0, msg, 5000);
-//					reply = (ResponseMsg) waitingForReply0.result(timeout, null);
-//
-//					if (reply != null) {
-//						getSender().tell(reply, self());
-//					}
-//					else {
-//						System.out.println("BALANCER: Both copies are resting for name " + msg.getName() + "!");
-//
-//						getSender().tell(new TimeoutMsg(), self());
-//					}
-//				}
-//				else {
-//					getSender().tell(reply, self());
-//				}
-//			} catch (TimeoutException | InterruptedException e1) {
-//				e1.printStackTrace();
-//			}
-//		}
+		ResponseMsg reply;
 
 		if (splitByInitial(msg.getName()) == 0){
 			try {
 				Future<Object> waitingForReply0 = ask(worker0, msg, 1000);
 				reply = (ResponseMsg) waitingForReply0.result(timeout, null);
 				getSender().tell(reply, self());
-
 			} catch (TimeoutException | InterruptedException e1) {
-
 				System.out.println("BALANCER: Primary copy query for name " + msg.getName() + " is resting!");
-
 				try {
 					Future<Object> waitingForReply1 = ask(worker1, msg, 1000);
 					reply = (ResponseMsg) waitingForReply1.result(timeout, null);
 					getSender().tell(reply, self());
-				}
-				catch (TimeoutException | InterruptedException e2) {
+				} catch (TimeoutException | InterruptedException e2) {
 					System.out.println("BALANCER: Both copies are resting for name " + msg.getName() + "!");
 					getSender().tell(new TimeoutMsg(), self());
 				}
 			}
-		}
-		else {
+		} else {
 			try {
 				Future<Object> waitingForReply0 = ask(worker1, msg, 1000);
 				reply = (ResponseMsg) waitingForReply0.result(timeout, null);
 				getSender().tell(reply, self());
-
 			} catch (TimeoutException | InterruptedException e1) {
-
 				System.out.println("BALANCER: Primary copy query for name " + msg.getName() + " is resting!");
-
 				try {
 					Future<Object> waitingForReply1 = ask(worker0, msg, 1000);
 					reply = (ResponseMsg) waitingForReply1.result(timeout, null);
 					getSender().tell(reply, self());
-				}
-				catch (TimeoutException | InterruptedException e2) {
+				} catch (TimeoutException | InterruptedException e2) {
 					System.out.println("BALANCER: Both copies are resting for name " + msg.getName() + "!");
 					getSender().tell(new TimeoutMsg(), self());
 				}
 			}
 		}
-
 	}
 
 	void storeEntry(PutMsg msg) {

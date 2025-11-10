@@ -53,7 +53,6 @@ public class AddressBookWorkerActor extends AbstractActor {
 	
 	void generateReply(GetMsg msg) {
 		System.out.println(this.toString() + ": Received query for name " + msg.getName());
-
 		String email;
 
 		if (this.primaryAddresses.containsKey(msg.getName())){
@@ -65,7 +64,6 @@ public class AddressBookWorkerActor extends AbstractActor {
 		}
 
 		getSender().tell(new ReplyMsg(email), self());
-
 	}
 
 	static Props props() {

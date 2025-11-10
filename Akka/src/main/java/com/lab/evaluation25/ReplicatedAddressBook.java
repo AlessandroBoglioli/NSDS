@@ -15,7 +15,7 @@ public class ReplicatedAddressBook {
 		final int timeStep = 2;
 
 		final ActorSystem sys = ActorSystem.create("System");
-		// TODO: Create actors, setup the system...
+
 		ActorRef client = sys.actorOf(AddressBookClientActor.props(), "client");
 		ActorRef balancer = sys.actorOf(AddressBookBalancerActor.props(), "balancer");
 		ActorRef worker0 = sys.actorOf(AddressBookWorkerActor.props(), "worker0");
@@ -29,7 +29,6 @@ public class ReplicatedAddressBook {
 		try {
 			TimeUnit.SECONDS.sleep(timeStep);
 		} catch (InterruptedException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 
@@ -41,7 +40,6 @@ public class ReplicatedAddressBook {
 		try {
 			TimeUnit.SECONDS.sleep(timeStep);
 		} catch (InterruptedException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 
@@ -52,7 +50,6 @@ public class ReplicatedAddressBook {
 		try {
 			TimeUnit.SECONDS.sleep(timeStep);
 		} catch (InterruptedException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 
@@ -63,7 +60,6 @@ public class ReplicatedAddressBook {
 		try {
 			TimeUnit.SECONDS.sleep(timeStep);
 		} catch (InterruptedException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 
@@ -75,7 +71,6 @@ public class ReplicatedAddressBook {
 		try {
 			TimeUnit.SECONDS.sleep(timeStep);
 		} catch (InterruptedException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 
@@ -86,7 +81,6 @@ public class ReplicatedAddressBook {
 		try {
 			TimeUnit.SECONDS.sleep(timeStep);
 		} catch (InterruptedException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 
@@ -97,7 +91,6 @@ public class ReplicatedAddressBook {
 		try {
 			TimeUnit.SECONDS.sleep(timeStep*10);
 		} catch (InterruptedException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 

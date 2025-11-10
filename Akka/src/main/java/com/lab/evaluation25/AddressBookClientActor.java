@@ -19,12 +19,10 @@ public class AddressBookClientActor extends AbstractActor {
 
 	@Override
 	public Receive createReceive() {
-		// TODO: Rewrite next line...
 		return receiveBuilder()
 				.match(ConfigMsg.class, this::onConfig)
 				.match(PutMsg.class, this::putEntry)
 				.match(GetMsg.class, this::query)
-
 				.build();
 	}
 
@@ -58,7 +56,6 @@ public class AddressBookClientActor extends AbstractActor {
 		} else {
 			System.out.println("Unhandled exception"); // Optional
 		}
-
 
 	}
 	static Props props() {
