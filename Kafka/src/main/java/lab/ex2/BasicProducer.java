@@ -1,11 +1,7 @@
-package it.polimi.middleware.kafka.basic;
+package lab.ex2;
 
 // Starting kafka server using cmd
 // bin\windows\kafka-server-start.bat config\server.properties
-
-import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -13,11 +9,15 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.serialization.StringSerializer;
 
+import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+
 public class BasicProducer {
     private static final String defaultTopic = "topicA";
 
     private static final int numMessages = 100000;
-    private static final int waitBetweenMsgs = 500;
+    private static final int waitBetweenMsgs = 1000;
     private static final boolean waitAck = false;
 
     private static final String serverAddr = "localhost:9092";
@@ -40,14 +40,22 @@ public class BasicProducer {
         for (int i = 0; i < numMessages; i++) {
             final String topic = topics.get(r.nextInt(topics.size()));
             final String key = "Key" + r.nextInt(1000);
-            final String value = "Val" + i;
+
+            String value = "ABCDEFGHIJKLMNOPQRSTUVWXYZ" + "abcdefghijklmnopqrstuvwxyz";
+            StringBuilder builder = new StringBuilder(10);
+            for (int j = 0; j < 10; j++) {
+                int index = (int)(value.length() * Math.random());
+                builder.append(value.charAt(index));
+            }
+            value = builder.toString();
+
             System.out.println(
                     "Topic: " + topic +
                     "\tKey: " + key +
                     "\tValue: " + value
             );
 
-            final ProducerRecord<String, String> record = new ProducerRecord<>(topic, key, value);
+            final ProducerRecord<String, String> record = new ProducerRecord<>(defaultTopic, key, value);
             final Future<RecordMetadata> future = producer.send(record);
 
             if (waitAck) {
