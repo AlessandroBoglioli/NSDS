@@ -11,9 +11,8 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.stream.Collectors;
 
-public class AtomicForeWarder {
+public class AtomicForwarder {
     private static final String defaultGroupId = "groupB";
     private static final String defaultTopic = "topicA";
     private static final String publishingTopic = "topicB";
@@ -54,8 +53,6 @@ public class AtomicForeWarder {
 
         final KafkaProducer<String, String> producer = new KafkaProducer<>(producerProps);
         producer.initTransactions();
-
-        final Random r = new Random();
 
         while (true) {
 
