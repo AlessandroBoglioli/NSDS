@@ -11,7 +11,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.Properties;
 
-public class BasicConsumerPrint {
+public class PrintingConsumer {
     private static final String defaultGroupId = "groupA";
     private static final String defaultTopic = "topicA";
 
@@ -19,18 +19,20 @@ public class BasicConsumerPrint {
     private static final boolean autoCommit = true;
     private static final int autoCommitIntervalMs = 15000;
 
-    // Default is "latest": try "earliest" instead
-    private static final String offsetResetStrategy = "latest";
+    private static final String offsetResetStrategy = "earliest";
 
     public static void main(String[] args) {
+
         // If there are arguments, use the first as group and the second as topic.
         // Otherwise, use default group and topic.
-        String groupId = args.length >= 1 ? args[0] : defaultGroupId;
-        String topic = args.length >= 2 ? args[1] : defaultTopic;
+//        String groupId = args.length >= 1 ? args[0] : defaultGroupId;
+//        String topic = args.length >= 2 ? args[1] : defaultTopic;
+
+        // Consumer Properties
 
         final Properties props = new Properties();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, serverAddr);
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, defaultGroupId);
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, String.valueOf(autoCommit));
         props.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, String.valueOf(autoCommitIntervalMs));
 
@@ -40,11 +42,16 @@ public class BasicConsumerPrint {
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
 
         KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);
-        consumer.subscribe(Collections.singletonList(topic));
+        consumer.subscribe(Collections.singletonList(defaultTopic));
+
         while (true) {
+
             final ConsumerRecords<String, String> records = consumer.poll(Duration.of(5, ChronoUnit.MINUTES));
+
+            // Printing the recives message
+
             for (final ConsumerRecord<String, String> record : records) {
-                System.out.print("Consumer group: " + groupId + "\t");
+                System.out.print("Consumer group: " + defaultGroupId + "\t");
                 System.out.println("Partition: " + record.partition() +
                         "\tOffset: " + record.offset() +
                         "\tKey: " + record.key() +

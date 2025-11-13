@@ -1,9 +1,5 @@
 package lab.ex1;
 
-// Starting kafka server using cmd
-// bin\windows\kafka-server-start.bat config\server.properties
-
-import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -15,20 +11,22 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 public class BasicProducer {
-    private static final String defaultTopic = "topicA";
 
+    // Constants definition
+
+    private static final String defaultTopic = "topicA";
     private static final int numMessages = 100000;
     private static final int waitBetweenMsgs = 500;
     private static final boolean waitAck = false;
-
     private static final String serverAddr = "localhost:9092";
 
     public static void main(String[] args) {
+
         // If there are no arguments, publish to the default topic
         // Otherwise publish on the topics provided as argument
-        List<String> topics = args.length < 1 ?
-                Collections.singletonList(defaultTopic) :
-                Arrays.asList(args);
+//        List<String> topics = args.length < 1 ?
+//                Collections.singletonList(defaultTopic) :
+//                Arrays.asList(args);
 
         final Properties props = new Properties();
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, serverAddr);
@@ -38,10 +36,14 @@ public class BasicProducer {
         final KafkaProducer<String, String> producer = new KafkaProducer<>(props);
         final Random r = new Random();
 
-        for (int i = 0; i < numMessages; i++) {
-            final String topic = topics.get(r.nextInt(topics.size()));
-            final String key = "Key" + r.nextInt(1000);
+        // Sending numMessages with waitBetweenMsgs delay
 
+        for (int i = 0; i < numMessages; i++) {
+
+            // Message creation
+
+            final String topic = defaultTopic;      //topics.get(r.nextInt(topics.size()));
+            final String key = "Key" + r.nextInt(1000);
             String value = "ABCDEFGHIJKLMNOPQRSTUVWXYZ" + "abcdefghijklmnopqrstuvwxyz";
             StringBuilder builder = new StringBuilder(10);
             for (int j = 0; j < 10; j++) {
@@ -49,6 +51,8 @@ public class BasicProducer {
                 builder.append(value.charAt(index));
             }
             value = builder.toString();
+
+            // Printing message
 
             System.out.println(
                     "Topic: " + topic +
@@ -58,6 +62,8 @@ public class BasicProducer {
 
             final ProducerRecord<String, String> record = new ProducerRecord<>(defaultTopic, key, value);
             final Future<RecordMetadata> future = producer.send(record);
+
+            // Waiting for Ack ?
 
             if (waitAck) {
                 try {

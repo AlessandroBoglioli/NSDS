@@ -19,7 +19,7 @@ import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-public class BasicConsumerCompute {
+public class BalancedComputeConsumer {
     private static final String defaultGroupId = "groupB";
     private static final String defaultTopic = "topicA";
     private static final String publishingTopic = "topicB";

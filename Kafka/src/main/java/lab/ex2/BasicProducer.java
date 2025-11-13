@@ -1,8 +1,5 @@
 package lab.ex2;
 
-// Starting kafka server using cmd
-// bin\windows\kafka-server-start.bat config\server.properties
-
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -23,11 +20,12 @@ public class BasicProducer {
     private static final String serverAddr = "localhost:9092";
 
     public static void main(String[] args) {
+
         // If there are no arguments, publish to the default topic
         // Otherwise publish on the topics provided as argument
-        List<String> topics = args.length < 1 ?
-                Collections.singletonList(defaultTopic) :
-                Arrays.asList(args);
+//        List<String> topics = args.length < 1 ?
+//                Collections.singletonList(defaultTopic) :
+//                Arrays.asList(args);
 
         final Properties props = new Properties();
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, serverAddr);
@@ -38,7 +36,7 @@ public class BasicProducer {
         final Random r = new Random();
 
         for (int i = 0; i < numMessages; i++) {
-            final String topic = topics.get(r.nextInt(topics.size()));
+            final String topic = defaultTopic;
             final String key = "Key" + r.nextInt(1000);
 
             String value = "ABCDEFGHIJKLMNOPQRSTUVWXYZ" + "abcdefghijklmnopqrstuvwxyz";
