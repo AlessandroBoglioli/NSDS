@@ -70,7 +70,7 @@ public class Consumers47 {
             // TODO: add properties if needed
 
             consumerProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
-            consumerProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+            consumerProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, IntegerDeserializer.class.getName());
             consumerProps.put(ConsumerConfig.ISOLATION_LEVEL_CONFIG, "read_committed");
             // The consumer does not commit automatically, but within the producer transaction
             consumerProps.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, String.valueOf(false));
@@ -85,7 +85,7 @@ public class Consumers47 {
             // TODO: add properties if needed
 
             producerProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
-            producerProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+            producerProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, IntegerSerializer.class.getName());
             producerProps.put(ProducerConfig.TRANSACTIONAL_ID_CONFIG, producerTransactionalId);
             producerProps.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, String.valueOf(true));
 
@@ -105,17 +105,18 @@ public class Consumers47 {
                 for (final ConsumerRecord<String, Integer> record : records) {
                     // TODO: add code to process records
 
-                    System.out.println("Received record :  Topic -> " + record.topic() +
-                            " Partition -> " + record.partition() +
-                            " Key -> " + record.key() +
-                            " Value -> " + record.value());
-
                     values.add(record.value());
                     if (values.size() == 10) {
 
                         // message elaboration and sending
                         for (int j = 0; j < 10; j ++)
                             sum += values.get(j);
+
+                        System.out.println("Sending record :  Topic -> " + record.topic() +
+                                " Partition -> " + record.partition() +
+                                " Key -> " + "sum" +
+                                " Value -> " + sum);
+
                         producer.send(new ProducerRecord<>(outputTopic, "sum", sum));
                         sum = 0;
                         values.clear();
@@ -156,7 +157,7 @@ public class Consumers47 {
             consumerProps.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, String.valueOf(true));
             consumerProps.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, String.valueOf(15000));
             consumerProps.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
-            consumerProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, IntegerDeserializer.class.getName());
+            consumerProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
             consumerProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, IntegerDeserializer.class.getName());
 
             KafkaConsumer<String, Integer> consumer = new KafkaConsumer<>(consumerProps);
@@ -169,7 +170,7 @@ public class Consumers47 {
             // TODO: add properties if needed
 
             producerProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
-            producerProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+            producerProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, IntegerSerializer.class.getName());
 
             final KafkaProducer<String, Integer> producer = new KafkaProducer<>(producerProps);
 
