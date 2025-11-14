@@ -6,6 +6,7 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.TopicPartition;
+import org.apache.kafka.common.internals.Topic;
 import org.apache.kafka.common.serialization.IntegerDeserializer;
 import org.apache.kafka.common.serialization.IntegerSerializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -90,15 +91,17 @@ public class Consumers47 {
 
             final KafkaProducer<String, Integer> producer = new KafkaProducer<>(producerProps);
             producer.initTransactions();
+            producer.beginTransaction();
 
             // TODO: add code if needed
 
             List<Integer> values = new ArrayList<>();
             Integer sum = 0;
 
+            final Map<TopicPartition, OffsetAndMetadata> map = new HashMap<>();
+
             while (true) {
                 final ConsumerRecords<String, Integer> records = consumer.poll(Duration.of(5, ChronoUnit.MINUTES));
-                producer.beginTransaction();
                 for (final ConsumerRecord<String, Integer> record : records) {
                     // TODO: add code to process records
 
@@ -108,25 +111,23 @@ public class Consumers47 {
                             " Value -> " + record.value());
 
                     values.add(record.value());
-                    if (values.size() >= 10) {
+                    if (values.size() == 10) {
+
+                        // message elaboration and sending
                         for (int j = 0; j < 10; j ++)
                             sum += values.get(j);
                         producer.send(new ProducerRecord<>(outputTopic, "sum", sum));
                         sum = 0;
                         values.clear();
+
+                        // Offset commit
+                        final long lastOffset = record.offset();
+                        map.put(new TopicPartition(record.topic(), record.partition()), new OffsetAndMetadata(lastOffset + 1));
+                        producer.sendOffsetsToTransaction(map, consumer.groupMetadata());
+                        producer.commitTransaction();
+                        producer.beginTransaction();
                     }
                 }
-
-                // TODO: I have to commit every 10 messages
-                final Map<TopicPartition, OffsetAndMetadata> map = new HashMap<>();
-                for (final TopicPartition partition : records.partitions()) {
-                    final List<ConsumerRecord<String, Integer>> partitionRecords = records.records(partition);
-                    final long lastOffset = partitionRecords.get(partitionRecords.size() - 1).offset();
-                    map.put(partition, new OffsetAndMetadata(lastOffset + 1));
-                }
-
-                producer.sendOffsetsToTransaction(map, consumer.groupMetadata());
-                producer.commitTransaction();
 
             }
         }
