@@ -1,4 +1,4 @@
-package it.polimi.nsds.kafka.eval;
+package lab.eval2024.eval;
 
 import org.apache.kafka.clients.consumer.*;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -15,7 +15,10 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 // Group number:
+// 47
+
 // Group members:
+// Boglioli Alessandro, Colombi Riccardo, Limoni Pietro
 
 // Number of partitions for inputTopic (min, max):
 // Number of partitions for outputTopic1 (min, max):
@@ -61,7 +64,6 @@ public class Consumers47 {
             final Properties consumerProps = new Properties();
             consumerProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, serverAddr);
             consumerProps.put(ConsumerConfig.GROUP_ID_CONFIG, consumerGroupId);
-
             consumerProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
             consumerProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, IntegerDeserializer.class.getName());
             consumerProps.put(ConsumerConfig.ISOLATION_LEVEL_CONFIG, "read_committed");
@@ -141,6 +143,8 @@ public class Consumers47 {
         private static final String inputTopic = "inputTopic";
         private static final String outputTopic = "outputTopic2";
 
+        private static final int windowSize = 10;
+
         public Consumer2(String serverAddr, String consumerGroupId) {
             this.serverAddr = serverAddr;
             this.consumerGroupId = consumerGroupId;
@@ -151,8 +155,11 @@ public class Consumers47 {
             final Properties consumerProps = new Properties();
             consumerProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, serverAddr);
             consumerProps.put(ConsumerConfig.GROUP_ID_CONFIG, consumerGroupId);
-
-            // TODO: add properties if needed
+            consumerProps.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, String.valueOf(true));
+            consumerProps.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, String.valueOf(15000));
+            consumerProps.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
+            consumerProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+            consumerProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, IntegerDeserializer.class.getName());
 
             KafkaConsumer<String, Integer> consumer = new KafkaConsumer<>(consumerProps);
             consumer.subscribe(Collections.singletonList(inputTopic));
@@ -160,17 +167,31 @@ public class Consumers47 {
             // Producer
             final Properties producerProps = new Properties();
             producerProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, serverAddr);
-
-            // TODO: add properties if needed
+            producerProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+            producerProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, IntegerSerializer.class.getName());
 
             final KafkaProducer<String, Integer> producer = new KafkaProducer<>(producerProps);
 
-            // TODO: add code if needed
+            Map<String, Integer> occurrences = new HashMap<>();
+            Map<String, Integer> sums = new HashMap<>();
 
             while (true) {
                 final ConsumerRecords<String, Integer> records = consumer.poll(Duration.of(5, ChronoUnit.MINUTES));
                 for (final ConsumerRecord<String, Integer> record : records) {
-                    // TODO: add code to process records
+
+                    System.out.println("Received record :  Topic -> " + record.topic() +
+                            " Partition -> " + record.partition() +
+                            " Key -> " + record.key() +
+                            " Value -> " + record.value());
+
+                    occurrences.put(record.key(), occurrences.getOrDefault(record.key(), 0) + 1);
+                    sums.put(record.key(), sums.getOrDefault(record.key(), 0) + record.value());
+
+                    if (occurrences.get(record.key()) == windowSize) {
+                        producer.send(new ProducerRecord<>(outputTopic, record.key(), sums.get(record.key())));
+                        occurrences.put(record.key(), 0);
+                        sums.put(record.key(), 0);
+                    }
                 }
             }
         }

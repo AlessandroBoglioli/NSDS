@@ -1,4 +1,4 @@
-package it.polimi.nsds.kafka.eval;
+package lab.eval2024.eval;
 
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
