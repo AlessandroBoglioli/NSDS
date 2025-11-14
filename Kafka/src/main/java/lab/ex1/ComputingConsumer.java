@@ -42,29 +42,31 @@ public class ComputingConsumer {
 //        String groupId = args.length >= 1 ? args[0] : defaultGroupId;
 //        String topic = args.length >= 2 ? args[1] : defaultTopic;
 
-        final Properties props = new Properties();
+        final Properties consumerProps = new Properties();
 
         // Consumer Properties
 
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, serverAddr);
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, defaultGroupId);
-        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, String.valueOf(autoCommit));
-        props.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, String.valueOf(autoCommitIntervalMs));
+        consumerProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, serverAddr);
+        consumerProps.put(ConsumerConfig.GROUP_ID_CONFIG, defaultGroupId);
+        consumerProps.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, String.valueOf(autoCommit));
+        consumerProps.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, String.valueOf(autoCommitIntervalMs));
 
-        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, offsetResetStrategy);
+        consumerProps.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, offsetResetStrategy);
 
-        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+        consumerProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+        consumerProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
 
-        KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);
+        KafkaConsumer<String, String> consumer = new KafkaConsumer<>(consumerProps);
         consumer.subscribe(Collections.singletonList(defaultTopic));
 
         // Producer Properties
 
-        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
-        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+        final Properties producerProps = new Properties();
 
-        final KafkaProducer<String, String> producer = new KafkaProducer<>(props);
+        producerProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+        producerProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+
+        final KafkaProducer<String, String> producer = new KafkaProducer<>(producerProps);
 
         final Random r = new Random();
 

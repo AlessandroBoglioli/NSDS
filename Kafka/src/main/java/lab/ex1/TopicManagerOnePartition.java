@@ -11,6 +11,7 @@ import java.util.concurrent.ExecutionException;
  */
 
 public class TopicManagerOnePartition {
+
     private static final String TOPIC_NAME = "topicA";
     private static final int TARGET_PARTITIONS = 1;
     private static final short REPLICATION_FACTOR = 1;
