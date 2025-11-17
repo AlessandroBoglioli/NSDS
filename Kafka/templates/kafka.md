@@ -82,6 +82,3 @@ For the EOS guarantee to hold, consumers must be configured to ignore messages f
     ```
 * **`read_committed`:** The consumer only reads messages that were part of a successfully committed transaction, ensuring data integrity.
 * **`read_uncommitted`:** The consumer reads all messages, including those from aborted transactions, risking duplicates or incomplete data.
-```eof
-
-You can now download the file named **`kafka_basic.md`** using the link in the document editor.
