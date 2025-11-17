@@ -1,107 +1,87 @@
-# Apache Kafka: Fundamentals and Exactly-Once Semantics (EOS)
+# Apache Kafka: Fundamentals and Exactly-Once Semantics (EOS) 🔒
 
-Apache Kafka is a distributed streaming platform designed for building
-real-time data pipelines and streaming applications. It allows for
-high-throughput, low-latency processing of data feeds.
+This document outlines the core components of the Kafka streaming platform and details the critical concepts required to achieve Exactly-Once Semantics (EOS) in distributed applications.
 
-## 1. Core Concepts
+***
 
-### Component Descriptions
+## 1. Core Kafka Components
 
--   **Topic**: A category or feed name to which records are published.
-    Topics are logically multi-producer, multi-consumer.
--   **Partition**: Topics are divided into a set of partitions.
-    Partitions are ordered, immutable sequences of records, each
-    assigned a sequential ID called the *offset*. This is the
-    fundamental unit of parallelism.
--   **Broker**: A single Kafka server. A cluster typically consists of
-    multiple brokers.
--   **Producer**: Application that publishes (writes) records to a Kafka
-    topic.
--   **Consumer**: Application that subscribes to one or more topics and
-    processes published records.
--   **Consumer Group**: A set of consumers cooperating to consume data.
-    Each partition is consumed by only one consumer within a group.
+| Component | Description | Relevance to Your Code |
+| :--- | :--- | :--- |
+| **Broker** | A single Kafka server. A cluster consists of multiple brokers to ensure high availability. | All files connect to a broker via `serverAddr = "localhost:9092"`. |
+| **Topic** | A logical feed/category for published records. Topics are divided into partitions. | Managed by the `TopicManager.java` class. |
+| **Partition** | The basic unit of parallelism. Partitions are ordered, immutable sequences of records, each identified by a sequential **Offset**. | `TopicManager` defines the number of partitions (`defaultTopicPartitions = 2`). |
+| **Consumer Group** | A set of consumers that share a `GROUP_ID`. Kafka ensures that each message is consumed by only **one** consumer within the group. | Used in `BasicConsumer.java` via `ConsumerConfig.GROUP_ID_CONFIG`. |
+| **Replication** | Copies of a partition stored on different brokers to prevent data loss. The `replicationFactor` defines data durability. | Configured by the `TopicManager` to ensure data resilience. |
 
-## 2. Producer Acknowledgement Guarantees
+***
 
-  -----------------------------------------------------------------------
-  acks          Description                   Guarantees
-  ------------- ----------------------------- ---------------------------
-  **0**         Producer does not wait for    *At Most Once* (data loss
-                acknowledgement               possible)
+## 2. Producer Reliability Guarantees
 
-  **1**         Producer waits for leader to  *At Least Once*
-                acknowledge                   (duplication possible)
+The producer's configuration is key to setting the delivery guarantee: At Most Once, At Least Once, or Exactly Once.
 
-  **all / -1**  Leader and all ISR replicas   *At Least Once* (strongest
-                acknowledge                   durability)
-  -----------------------------------------------------------------------
+### A. Acknowledgment (`acks`)
 
-## 3. Exactly-Once Semantics (EOS)
+This setting controls the durability tradeoff between latency and safety.
 
-EOS ensures that messages are delivered and processed *exactly once*,
-even in failure scenarios. Kafka achieves this through:
+| `acks` Setting | Outcome | Safety Guarantee |
+| :--- | :--- | :--- |
+| `0` | Producer does not wait for any acknowledgment. | **At Most Once** (Fastest, highest risk of data loss). |
+| `1` | Producer waits only for the **leader broker** to acknowledge the write. | **At Least Once** (Faster than `all`, still risks loss if the leader fails). |
+| `all` (`-1`) | Producer waits for the leader and **all In-Sync Replicas (ISRs)** to acknowledge. | **At Least Once** (Highest durability, standard for critical data). |
 
--   **Idempotence**
--   **Transactions**
+### B. Idempotence
 
-### A. Idempotent Producer
+Idempotence is the first step toward EOS. It prevents message duplication caused by **producer retries** of the *same message batch*.
 
-Idempotence ensures no duplicate writes for a single producer → single
-partition workflow.
+* **How it Works:** The producer is assigned a **Producer ID (PID)** and sends a **Sequence Number** with each batch. The broker tracks the last successfully committed sequence number for that PID and Partition, discarding any repeated sequence numbers.
+* **Enabling Idempotence (`IdempotentProducer.java`):**
+    ```java
+    props.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, String.valueOf(true));
+    ```
 
-Mechanisms: - **Producer ID (PID)** - **Sequence Number** for each batch
+***
 
-Configuration:
+## 3. Exactly-Once Semantics (EOS) via Transactions
 
-``` java
-props.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, "true");
-```
+EOS guarantees that a **Read-Process-Write** operation (consuming data, processing it, and writing the result) is atomic. This is achieved using Kafka Transactions, which coordinate both the output messages and the input offset commits.
 
-### B. Transactions (Atomic Read-Process-Write)
+### A. Transactional Producer
 
-Transactions ensure atomic operations across multiple partitions.
+This producer can combine multiple sends and an offset commit into a single atomic unit.
 
-#### Transactional Producer Example
+* **Requirement:** The producer must have a unique `transactional.id`.
+* **Configuration (`TransactionalProducer.java`):**
+    ```java
+    props.put(ProducerConfig.TRANSACTIONAL_ID_CONFIG, "myTransactionalId");
+    // This method must be called before using any transaction methods
+    producer.initTransactions();
+    ```
+* **API Flow:** The transaction sequence is `producer.beginTransaction()`, followed by one or more `producer.send()`, and concluded with either `producer.commitTransaction()` (Success: makes messages visible) or `producer.abortTransaction()` (Failure: discards all messages).
 
-``` java
-props.put(ProducerConfig.TRANSACTIONAL_ID_CONFIG, transactionalId);
+### B. The Atomic Forwarder Pattern
 
-producer.initTransactions();
-producer.beginTransaction();
-// send messages...
-producer.commitTransaction(); // or producer.abortTransaction();
-```
+The `AtomicForwarder.java` class demonstrates the core of EOS: committing the consumer's position (offset) and the producer's output messages together.
 
-#### Transactional Consumer
+1.  Start Transaction: `producer.beginTransaction()`
+2.  Process and Send: Loop through input records, apply logic, and call `producer.send()` for the output topic.
+3.  Commit Offsets: The crucial step where the producer informs Kafka to commit the consumer offsets:
+    ```java
+    producer.sendOffsetsToTransaction(map, consumer.groupMetadata());
+    ```
+4.  Commit Transaction: `producer.commitTransaction()`
 
-``` java
-props.put(ConsumerConfig.ISOLATION_LEVEL_CONFIG, "read_committed");
-```
+### C. Transactional Consumer Isolation
 
-### C. Atomic Forwarder Pattern
+For the EOS guarantee to hold, consumers must be configured to ignore messages from transactions that were aborted.
 
-Ensures that consuming input and writing output happen atomically.
+* **Configuration (`TransactionalConsumer.java`):**
+    ```java
+    // This is the default setting for EOS applications
+    props.put(ConsumerConfig.ISOLATION_LEVEL_CONFIG, "read_committed");
+    ```
+* **`read_committed`:** The consumer only reads messages that were part of a successfully committed transaction, ensuring data integrity.
+* **`read_uncommitted`:** The consumer reads all messages, including those from aborted transactions, risking duplicates or incomplete data.
+```eof
 
-``` java
-producer.beginTransaction();
-// process and send output records...
-producer.sendOffsetsToTransaction(offsetMap, consumer.groupMetadata());
-producer.commitTransaction();
-```
-
-## 4. Topic Manager (AdminClient API)
-
-Used to create, delete, and manage Kafka topics.
-
-Example:
-
-``` java
-NewTopic newTopic = new NewTopic(topicName, topicPartitions, replicationFactor);
-adminClient.createTopics(Collections.singletonList(newTopic)).all().get();
-```
-
-------------------------------------------------------------------------
-
-Generated for GitHub upload.
+You can now download the file named **`kafka_basic.md`** using the link in the document editor.
