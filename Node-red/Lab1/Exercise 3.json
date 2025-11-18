@@ -1,0 +1,170 @@
+[
+    {
+        "id": "8329dada7c8f1f5f",
+        "type": "tab",
+        "label": "Exercise 3",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "55c69871f18719c8",
+        "type": "udp in",
+        "z": "8329dada7c8f1f5f",
+        "name": "Revice Echo",
+        "iface": "",
+        "port": "5555",
+        "ipv": "udp4",
+        "multicast": "false",
+        "group": "",
+        "datatype": "utf8",
+        "x": 590,
+        "y": 160,
+        "wires": [
+            [
+                "b5c2d3319204fe1f"
+            ]
+        ]
+    },
+    {
+        "id": "b6ce65367e9c316b",
+        "type": "debug",
+        "z": "8329dada7c8f1f5f",
+        "name": "Print Echo Payload",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 970,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "09a36c7b94d98481",
+        "type": "inject",
+        "z": "8329dada7c8f1f5f",
+        "name": "Start",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 150,
+        "y": 260,
+        "wires": [
+            [
+                "33cd5d3a39c8c1bb"
+            ]
+        ]
+    },
+    {
+        "id": "76426ca1197ca1ed",
+        "type": "udp out",
+        "z": "8329dada7c8f1f5f",
+        "name": "Send Echo",
+        "addr": "127.0.0.1",
+        "iface": "",
+        "port": "7779",
+        "ipv": "udp4",
+        "outport": "",
+        "base64": false,
+        "multicast": "false",
+        "x": 770,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "dafaf433180d4503",
+        "type": "function",
+        "z": "8329dada7c8f1f5f",
+        "name": "Get temperature",
+        "func": "msg.payload = {\n   str : \"The temperature in Milan is \",\n   num: msg.payload.tempc\n}\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 500,
+        "y": 260,
+        "wires": [
+            [
+                "72d50f593c7a9c73"
+            ]
+        ]
+    },
+    {
+        "id": "33cd5d3a39c8c1bb",
+        "type": "openweathermap",
+        "z": "8329dada7c8f1f5f",
+        "name": "Milan Weather",
+        "wtype": "current",
+        "lon": "",
+        "lat": "",
+        "city": "Milan",
+        "country": "IT",
+        "language": "en",
+        "x": 320,
+        "y": 360,
+        "wires": [
+            [
+                "dafaf433180d4503"
+            ]
+        ]
+    },
+    {
+        "id": "72d50f593c7a9c73",
+        "type": "json",
+        "z": "8329dada7c8f1f5f",
+        "name": "",
+        "property": "payload",
+        "action": "str",
+        "pretty": false,
+        "x": 630,
+        "y": 360,
+        "wires": [
+            [
+                "76426ca1197ca1ed"
+            ]
+        ]
+    },
+    {
+        "id": "b5c2d3319204fe1f",
+        "type": "json",
+        "z": "8329dada7c8f1f5f",
+        "name": "",
+        "property": "payload",
+        "action": "obj",
+        "pretty": false,
+        "x": 790,
+        "y": 100,
+        "wires": [
+            [
+                "b6ce65367e9c316b"
+            ]
+        ]
+    },
+    {
+        "id": "2ecac77fcff29014",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-node-openweathermap": "1.0.1"
+        }
+    }
+]

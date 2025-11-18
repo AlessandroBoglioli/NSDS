@@ -1,0 +1,99 @@
+[
+    {
+        "id": "4d0a9b8cbe276e65",
+        "type": "tab",
+        "label": "Exercise 4",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "e796a462a2d7fefe",
+        "type": "mqtt in",
+        "z": "4d0a9b8cbe276e65",
+        "name": "MQTT in",
+        "topic": "neslabpolimi/smartcity/milan",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "15a6e594370b32e4",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 240,
+        "y": 180,
+        "wires": [
+            [
+                "fe5140937476b7db"
+            ]
+        ]
+    },
+    {
+        "id": "fe5140937476b7db",
+        "type": "function",
+        "z": "4d0a9b8cbe276e65",
+        "name": "Get Maximum Values",
+        "func": "if (msg.payload.fields.temperature > context.get(\"maxTemp\")){\n    context.set(\"maxTemp\", msg.payload.fields.temperature)\n}\nif (msg.payload.fields.humidity > context.get(\"maxHumidity\")){\n    context.set(\"maxHumidity\", msg.payload.fields.humidity)\n}\nif (msg.payload.fields.pm25 > context.get(\"maxP2_5\")) {\n    context.set(\"maxHumidity\", msg.payload.fields.humidity)\n}\nif (msg.payload.fields.pm10 > context.get(\"maxPM10\")) {\n    context.set(\"maxHumidity\", msg.payload.fields.humidity)\n}\n\nmsg.payload = {\n    maxTemp: context.get(\"maxTemp\"),\n    maxHum: context.get(\"maxHumidity\"),\n    maxP2_5 : context.get(\"maxP2_5\"),\n    maxPM10 : context.get(\"maxPM10\")\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "// Code added here will be run once\n// whenever the node is started.\ncontext.set(\"maxTemp\", -1)\ncontext.set(\"maxHumidity\", -1)\ncontext.set(\"maxP2_5\", -1)\ncontext.set(\"maxPM10\", -1)",
+        "finalize": "",
+        "libs": [],
+        "x": 540,
+        "y": 200,
+        "wires": [
+            [
+                "e96c04e68cf813f8"
+            ]
+        ]
+    },
+    {
+        "id": "e96c04e68cf813f8",
+        "type": "debug",
+        "z": "4d0a9b8cbe276e65",
+        "name": "Print Values",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 810,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "15a6e594370b32e4",
+        "type": "mqtt-broker",
+        "name": "Neslab",
+        "broker": "mqtt.neslab.it",
+        "port": "3200",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": 4,
+        "keepalive": 60,
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    }
+]

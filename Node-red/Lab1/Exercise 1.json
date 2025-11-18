@@ -1,0 +1,138 @@
+[
+    {
+        "id": "f6f2187d.f17ca8",
+        "type": "tab",
+        "label": "Exercise 1",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "1fed771c28a37e11",
+        "type": "debug",
+        "z": "f6f2187d.f17ca8",
+        "name": "Print Weather",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 820,
+        "y": 60,
+        "wires": []
+    },
+    {
+        "id": "52579960cb988ce2",
+        "type": "openweathermap",
+        "z": "f6f2187d.f17ca8",
+        "name": "Milan Weather",
+        "wtype": "current",
+        "lon": "",
+        "lat": "",
+        "city": "Milan",
+        "country": "IT",
+        "language": "en",
+        "x": 520,
+        "y": 140,
+        "wires": [
+            [
+                "1fed771c28a37e11",
+                "1dd80dbe69cde339"
+            ]
+        ]
+    },
+    {
+        "id": "0a92288d480a405c",
+        "type": "inject",
+        "z": "f6f2187d.f17ca8",
+        "name": "Every minute",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "60",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 280,
+        "y": 140,
+        "wires": [
+            [
+                "52579960cb988ce2"
+            ]
+        ]
+    },
+    {
+        "id": "1dd80dbe69cde339",
+        "type": "function",
+        "z": "f6f2187d.f17ca8",
+        "name": "Get temperature",
+        "func": "msg.payload = msg.payload.tempc\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 820,
+        "y": 240,
+        "wires": [
+            [
+                "63a67f84f49f19ad",
+                "ae2890b41229e5a3"
+            ]
+        ]
+    },
+    {
+        "id": "ae2890b41229e5a3",
+        "type": "file",
+        "z": "f6f2187d.f17ca8",
+        "name": "Log",
+        "filename": "Temperatures.txt",
+        "filenameType": "str",
+        "appendNewline": true,
+        "createDir": true,
+        "overwriteFile": "false",
+        "encoding": "setbymsg",
+        "x": 1070,
+        "y": 180,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "63a67f84f49f19ad",
+        "type": "debug",
+        "z": "f6f2187d.f17ca8",
+        "name": "Print temperature",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1110,
+        "y": 280,
+        "wires": []
+    },
+    {
+        "id": "cbd2d4de50c352a0",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-node-openweathermap": "1.0.1"
+        }
+    }
+]

@@ -1,0 +1,76 @@
+[
+    {
+        "id": "c488823f877e92f7",
+        "type": "tab",
+        "label": "Exercise 2",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "4e5a59cbd33e57d0",
+        "type": "file in",
+        "z": "c488823f877e92f7",
+        "name": "Read Temperatures",
+        "filename": "Temperatures.txt",
+        "filenameType": "str",
+        "format": "utf8",
+        "chunk": false,
+        "sendError": false,
+        "encoding": "none",
+        "allProps": false,
+        "x": 390,
+        "y": 160,
+        "wires": [
+            [
+                "17ca5c737861e4ba"
+            ]
+        ]
+    },
+    {
+        "id": "23e52a55578fae41",
+        "type": "inject",
+        "z": "c488823f877e92f7",
+        "name": "Every Minute",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "60",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 180,
+        "y": 160,
+        "wires": [
+            [
+                "4e5a59cbd33e57d0"
+            ]
+        ]
+    },
+    {
+        "id": "17ca5c737861e4ba",
+        "type": "debug",
+        "z": "c488823f877e92f7",
+        "name": "Print Temperature",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 610,
+        "y": 160,
+        "wires": []
+    }
+]
