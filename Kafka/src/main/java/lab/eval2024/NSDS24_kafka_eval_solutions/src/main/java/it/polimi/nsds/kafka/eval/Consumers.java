@@ -1,4 +1,4 @@
-package lab.eval2024.eval;
+package it.polimi.nsds.kafka.eval;
 
 import org.apache.kafka.clients.consumer.*;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -15,10 +15,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 // Group number:
-// 47
-
 // Group members:
-// Boglioli Alessandro, Colombi Riccardo, Limoni Pietro
 
 // Number of partitions for inputTopic (min, max):
 // Number of partitions for outputTopic1 (min, max):
@@ -30,7 +27,7 @@ import java.util.*;
 // Please, specify below any relation between the number of partitions for the topics
 // and the number of instances of each Consumer
 
-public class Consumers47 {
+public class Consumers {
     public static void main(String[] args) {
         String serverAddr = "localhost:9092";
         int consumerId = Integer.valueOf(args[0]);
@@ -48,11 +45,10 @@ public class Consumers47 {
         private final String serverAddr;
         private final String consumerGroupId;
 
+        private static final String transactionId = "consumer1Id";
+
         private static final String inputTopic = "inputTopic";
         private static final String outputTopic = "outputTopic1";
-
-        private static final String producerTransactionalId = "forwarderTransactionalId";
-        private static final int windowSize = 10;
 
         public Consumer1(String serverAddr, String consumerGroupId) {
             this.serverAddr = serverAddr;
@@ -64,9 +60,9 @@ public class Consumers47 {
             final Properties consumerProps = new Properties();
             consumerProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, serverAddr);
             consumerProps.put(ConsumerConfig.GROUP_ID_CONFIG, consumerGroupId);
+
             consumerProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
             consumerProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, IntegerDeserializer.class.getName());
-            consumerProps.put(ConsumerConfig.ISOLATION_LEVEL_CONFIG, "read_committed");
             // The consumer does not commit automatically, but within the producer transaction
             consumerProps.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, String.valueOf(false));
 
@@ -78,58 +74,41 @@ public class Consumers47 {
             producerProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, serverAddr);
             producerProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
             producerProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, IntegerSerializer.class.getName());
-            producerProps.put(ProducerConfig.TRANSACTIONAL_ID_CONFIG, producerTransactionalId);
+            producerProps.put(ProducerConfig.TRANSACTIONAL_ID_CONFIG, transactionId);
             producerProps.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, String.valueOf(true));
 
             final KafkaProducer<String, Integer> producer = new KafkaProducer<>(producerProps);
-
-            List<ConsumerRecord<String, Integer>> storedRecords = new ArrayList<>();
-
             producer.initTransactions();
-            producer.beginTransaction();
 
+            final List<ConsumerRecord<String, Integer>> window = new ArrayList<>(10);
             while (true) {
                 final ConsumerRecords<String, Integer> records = consumer.poll(Duration.of(5, ChronoUnit.MINUTES));
-
                 for (final ConsumerRecord<String, Integer> record : records) {
-                    storedRecords.add(record);
-
-                    if (storedRecords.size() == windowSize) {
-                        String key = "sum";
-                        int value = 0;
-
-                        // debugging
-                        System.out.println("Last message of the windows:");
-                        System.out.println("Partition: " + record.partition() +
-                                "\tOffset: " + record.offset() +
-                                "\tKey: " + record.key() +
-                                "\tValue: " + record.value()
-                        );
-
-                        for (ConsumerRecord<String, Integer> storedRecord : storedRecords) {
-                            value += storedRecord.value();
-                        }
-
-                        System.out.println("Sum: " + value);
-
-                        producer.send(new ProducerRecord<>(outputTopic, key, value));
-
-                        final long lastOffset = record.offset();
+                    final String key = record.key();
+                    final Integer value = record.value();
+                    System.out.println("Received key: " + key + " value: " + value);
+                    window.add(record);
+                    if (window.size() == 10) {
+                        System.out.println("Window full");
+                        producer.beginTransaction();
 
                         // The producer manually commits the offsets for the consumer within the transaction
                         final Map<TopicPartition, OffsetAndMetadata> map = new HashMap<>();
-                        TopicPartition topicPartition = new TopicPartition(record.topic(), record.partition());
-                        map.put(topicPartition, new OffsetAndMetadata(lastOffset + 1));
+                        int sum = 0;
+                        for (final ConsumerRecord<String, Integer> winRecord : window) {
+                            sum += winRecord.value();
+                            producer.send(new ProducerRecord<>(outputTopic, key, value));
+                            map.put(new TopicPartition(winRecord.topic(), winRecord.partition()), new OffsetAndMetadata(winRecord.offset() + 1));
+                        }
 
-                        storedRecords.clear();
-
+                        // The producer sends the sum downstream
+                        System.out.println("Sum of values: " + sum);
+                        System.out.println("Sending to output topic: " + outputTopic);
+                        producer.send(new ProducerRecord<>(outputTopic, "Sum", sum));
                         producer.sendOffsetsToTransaction(map, consumer.groupMetadata());
                         producer.commitTransaction();
 
-                        System.out.println("Transaction committed");
-
-                        // start new transaction
-                        producer.beginTransaction();
+                        window.clear();
                     }
                 }
             }
@@ -143,8 +122,6 @@ public class Consumers47 {
         private static final String inputTopic = "inputTopic";
         private static final String outputTopic = "outputTopic2";
 
-        private static final int windowSize = 10;
-
         public Consumer2(String serverAddr, String consumerGroupId) {
             this.serverAddr = serverAddr;
             this.consumerGroupId = consumerGroupId;
@@ -155,11 +132,10 @@ public class Consumers47 {
             final Properties consumerProps = new Properties();
             consumerProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, serverAddr);
             consumerProps.put(ConsumerConfig.GROUP_ID_CONFIG, consumerGroupId);
-            consumerProps.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, String.valueOf(true));
-            consumerProps.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, String.valueOf(15000));
-            consumerProps.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
+
             consumerProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
             consumerProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, IntegerDeserializer.class.getName());
+            consumerProps.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, String.valueOf(true));
 
             KafkaConsumer<String, Integer> consumer = new KafkaConsumer<>(consumerProps);
             consumer.subscribe(Collections.singletonList(inputTopic));
@@ -172,25 +148,21 @@ public class Consumers47 {
 
             final KafkaProducer<String, Integer> producer = new KafkaProducer<>(producerProps);
 
-            Map<String, Integer> occurrences = new HashMap<>();
-            Map<String, Integer> sums = new HashMap<>();
-
+            final Map<String, Integer> windowSums = new HashMap<>();
+            final Map<String, Integer> windowCount = new HashMap<>();
             while (true) {
                 final ConsumerRecords<String, Integer> records = consumer.poll(Duration.of(5, ChronoUnit.MINUTES));
                 for (final ConsumerRecord<String, Integer> record : records) {
-    
-                    System.out.println("Received record :  Topic -> " + record.topic() +
-                            " Partition -> " + record.partition() +
-                            " Key -> " + record.key() +
-                            " Value -> " + record.value());
-
-                    occurrences.put(record.key(), occurrences.getOrDefault(record.key(), 0) + 1);
-                    sums.put(record.key(), sums.getOrDefault(record.key(), 0) + record.value());
-
-                    if (occurrences.get(record.key()) == windowSize) {
-                        producer.send(new ProducerRecord<>(outputTopic, record.key(), sums.get(record.key())));
-                        occurrences.put(record.key(), 0);
-                        sums.put(record.key(), 0);
+                    final String key = record.key();
+                    final Integer value = record.value();
+                    System.out.println("Received key: " + key + " value: " + value);
+                    windowSums.put(key, windowSums.getOrDefault(key, 0) + value);
+                    windowCount.put(key, windowCount.getOrDefault(key, 0) + 1);
+                    if (windowCount.get(key) == 10) {
+                        System.out.println("Window full");
+                        producer.send(new ProducerRecord<>(outputTopic, key, windowSums.get(key)));
+                        windowSums.remove(key);
+                        windowCount.remove(key);
                     }
                 }
             }
