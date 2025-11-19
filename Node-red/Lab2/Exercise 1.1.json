@@ -94,8 +94,8 @@
         "y": 160,
         "wires": [
             [
-                "b86eecca0a7bf060",
-                "d81a057a7ba7b801"
+                "d81a057a7ba7b801",
+                "dfc3db75d8f059c8"
             ]
         ]
     },
@@ -114,29 +114,8 @@
         "y": 360,
         "wires": [
             [
-                "b86eecca0a7bf060",
-                "1b5e365ffac7c58b"
-            ]
-        ]
-    },
-    {
-        "id": "b86eecca0a7bf060",
-        "type": "function",
-        "z": "475ff0c8bcc70207",
-        "name": "Create message",
-        "func": "msg.payload = {\n    chatId: msg.originalMessage.chat.id,\n    type: 'message',\n    content: \"The temperature in \" + msg.payload.location + \" is \" + msg.payload.tempc\n};\nreturn msg;\n",
-        "outputs": 1,
-        "timeout": 0,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 900,
-        "y": 260,
-        "wires": [
-            [
-                "b31852b3e20af628",
-                "357688a293d00f8b"
+                "1b5e365ffac7c58b",
+                "dfc3db75d8f059c8"
             ]
         ]
     },
@@ -206,6 +185,26 @@
         "wires": []
     },
     {
+        "id": "dfc3db75d8f059c8",
+        "type": "chatbot-message",
+        "z": "475ff0c8bcc70207",
+        "name": "Compose Message",
+        "message": [
+            {
+                "message": "The temperature in {{payload.location}} is {{payload.tempc}}! "
+            }
+        ],
+        "language": "none",
+        "x": 910,
+        "y": 240,
+        "wires": [
+            [
+                "b31852b3e20af628",
+                "357688a293d00f8b"
+            ]
+        ]
+    },
+    {
         "id": "4b3eacd28b0795a0",
         "type": "chatbot-telegram-node",
         "botname": "Node-RED Lab",
@@ -223,7 +222,7 @@
         "chatbotId": ""
     },
     {
-        "id": "fc5c93ec8b51a4df",
+        "id": "2fc9c1fce012c5c4",
         "type": "global-config",
         "env": [],
         "modules": {

@@ -18,7 +18,7 @@
         "wires": [
             [
                 "4817138fa43be896",
-                "b54bc47d3df361ee"
+                "a0b427abfc89d048"
             ]
         ]
     },
@@ -32,8 +32,8 @@
         "passThrough": false,
         "errorOutput": false,
         "outputs": 0,
-        "x": 1190,
-        "y": 300,
+        "x": 810,
+        "y": 140,
         "wires": []
     },
     {
@@ -65,10 +65,10 @@
         "country": "IT",
         "language": "en",
         "x": 600,
-        "y": 280,
+        "y": 300,
         "wires": [
             [
-                "a8ce5559d7ead4da"
+                "0a3b70149f00647b"
             ]
         ]
     },
@@ -87,123 +87,7 @@
         "y": 360,
         "wires": [
             [
-                "a8ce5559d7ead4da"
-            ]
-        ]
-    },
-    {
-        "id": "a8ce5559d7ead4da",
-        "type": "function",
-        "z": "40d19919a88d1bd2",
-        "name": "Create message",
-        "func": "msg.payload = {\n    chatId: msg.originalMessage.chat.id,\n    type: 'message',\n    content: \"The temperature in \" + msg.payload.location + \" is \" + msg.payload.tempc\n};\nreturn msg;\n",
-        "outputs": 1,
-        "timeout": 0,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 820,
-        "y": 320,
-        "wires": [
-            [
-                "10c8d779714eac2a"
-            ]
-        ]
-    },
-    {
-        "id": "b54bc47d3df361ee",
-        "type": "switch",
-        "z": "40d19919a88d1bd2",
-        "name": "Message checker",
-        "property": "payload.content",
-        "propertyType": "msg",
-        "rules": [
-            {
-                "t": "cont",
-                "v": "My name is",
-                "vt": "str"
-            },
-            {
-                "t": "eq",
-                "v": "What is the temperature in Milan?",
-                "vt": "str"
-            },
-            {
-                "t": "eq",
-                "v": "What is the temperature in Rome?",
-                "vt": "str"
-            },
-            {
-                "t": "eq",
-                "v": "What's your name?",
-                "vt": "str"
-            },
-            {
-                "t": "nempty"
-            }
-        ],
-        "checkall": "false",
-        "repair": false,
-        "outputs": 5,
-        "x": 270,
-        "y": 320,
-        "wires": [
-            [
-                "16c8d61781497ca1",
-                "5440f4ef1e5212d4"
-            ],
-            [
-                "6e439e12f931b786"
-            ],
-            [
-                "55c1cec96b8feb09"
-            ],
-            [
-                "3a996ac97a7e36e2"
-            ],
-            [
-                "ec066760f6b673d9"
-            ]
-        ]
-    },
-    {
-        "id": "3a996ac97a7e36e2",
-        "type": "function",
-        "z": "40d19919a88d1bd2",
-        "name": "Reply",
-        "func": "msg.payload = {\n    chatId: msg.originalMessage.chat.id,\n    type: 'message',\n    content: \"Hi, I'm the NSDS telegram bot\"\n};\nreturn msg;",
-        "outputs": 1,
-        "timeout": 0,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 590,
-        "y": 460,
-        "wires": [
-            [
-                "10c8d779714eac2a"
-            ]
-        ]
-    },
-    {
-        "id": "ec066760f6b673d9",
-        "type": "function",
-        "z": "40d19919a88d1bd2",
-        "name": "Reply",
-        "func": "msg.payload = {\n    chatId: msg.originalMessage.chat.id,\n    type: 'message',\n    content: \"I don't get what are you sayng\"\n};\nreturn msg;",
-        "outputs": 1,
-        "timeout": 0,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 590,
-        "y": 520,
-        "wires": [
-            [
-                "10c8d779714eac2a"
+                "0a3b70149f00647b"
             ]
         ]
     },
@@ -218,46 +102,54 @@
         "createDir": false,
         "overwriteFile": "false",
         "encoding": "none",
-        "x": 920,
-        "y": 140,
+        "x": 620,
+        "y": 440,
         "wires": [
             []
         ]
     },
     {
-        "id": "16c8d61781497ca1",
+        "id": "a0b427abfc89d048",
         "type": "function",
         "z": "40d19919a88d1bd2",
-        "name": "function 2",
-        "func": "let newMsg = msg;\nnewMsg.payload = msg.originalMessage.from.username;\n\nreturn newMsg;",
-        "outputs": 1,
+        "name": "Compute Response",
+        "func": "if (msg.payload.content == \"What's your name?\") {\n    msg.payload.content = \"I am the NSDS Telegram Bot!\";\n    delete msg.ts;\n    delete msg.transport;\n    msg.payload.inbound = false;\n    msg.payload.fallback = null;\n    return [msg, null, null, null];\n} if (msg.payload.content.startsWith(\"My name is\")) {\n    let username = msg.payload.content.substring(11);\n    msg.payload.content = \"Hello \" + username + \"!\";\n    delete msg.ts;\n    delete msg.transport;\n    msg.payload.inbound = false;\n    msg.payload.fallback = null;\n    let fileMsg = {\n        payload: username,\n    };\n    return [msg, null, null, fileMsg];\n} else if (msg.payload.content == \"What's the temperature in Milan?\") {\n    return [null, msg, null, null];\n} else if (msg.payload.content == \"What's the temperature in Rome?\") {\n    return [null, null, msg, null];\n} else {\n    msg.payload.content = \"I don't get what you're asking...\";\n    delete msg.ts;\n    delete msg.transport;\n    msg.payload.inbound = false;\n    msg.payload.fallback = null;\n    return [msg, null, null, null];\n}\n",
+        "outputs": 4,
         "timeout": 0,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 600,
-        "y": 140,
+        "x": 320,
+        "y": 320,
         "wires": [
+            [
+                "10c8d779714eac2a"
+            ],
+            [
+                "6e439e12f931b786"
+            ],
+            [
+                "55c1cec96b8feb09"
+            ],
             [
                 "d9e87efd7cfaea9b"
             ]
         ]
     },
     {
-        "id": "5440f4ef1e5212d4",
-        "type": "function",
+        "id": "0a3b70149f00647b",
+        "type": "chatbot-message",
         "z": "40d19919a88d1bd2",
-        "name": "function 1",
-        "func": "let words = msg.payload.content.split(\" \");\nmsg.payload = {\n    chatId: msg.originalMessage.chat.id,\n    type: 'message',\n    content: \"Hi \" + words[3]\n};\n\nreturn msg;",
-        "outputs": 1,
-        "timeout": 0,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 600,
-        "y": 220,
+        "name": "Compose Message",
+        "message": [
+            {
+                "message": "The temperature in {{payload.location}} is {{payload.tempc}}! "
+            }
+        ],
+        "language": "none",
+        "x": 890,
+        "y": 260,
         "wires": [
             [
                 "10c8d779714eac2a"
@@ -282,7 +174,7 @@
         "chatbotId": ""
     },
     {
-        "id": "59d149ee10e3e9a5",
+        "id": "85e782c03a68e490",
         "type": "global-config",
         "env": [],
         "modules": {
