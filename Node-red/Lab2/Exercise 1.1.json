@@ -1,0 +1,234 @@
+[
+    {
+        "id": "475ff0c8bcc70207",
+        "type": "tab",
+        "label": "Exercise 1.1",
+        "disabled": true,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "8f304359df6e22d1",
+        "type": "chatbot-telegram-receive",
+        "z": "475ff0c8bcc70207",
+        "bot": "4b3eacd28b0795a0",
+        "botProduction": "",
+        "x": 170,
+        "y": 120,
+        "wires": [
+            [
+                "341fe3932da8776d",
+                "b99a645085dee111"
+            ]
+        ]
+    },
+    {
+        "id": "357688a293d00f8b",
+        "type": "chatbot-telegram-send",
+        "z": "475ff0c8bcc70207",
+        "bot": "4b3eacd28b0795a0",
+        "botProduction": "",
+        "track": false,
+        "passThrough": false,
+        "errorOutput": false,
+        "outputs": 0,
+        "x": 1210,
+        "y": 300,
+        "wires": []
+    },
+    {
+        "id": "341fe3932da8776d",
+        "type": "debug",
+        "z": "475ff0c8bcc70207",
+        "name": "Show Incoming Msg!",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 420,
+        "y": 60,
+        "wires": []
+    },
+    {
+        "id": "b99a645085dee111",
+        "type": "function",
+        "z": "475ff0c8bcc70207",
+        "name": "Compute Answer",
+        "func": "delete msg.ts;\ndelete msg.transport;\nmsg.payload.inbound = false;\nmsg.payload.fallback = null;\n\nif (msg.payload.content==\"What is the temperature in Milan?\") {\n    return [msg, null, null];\n} else if (msg.payload.content == \"What is the temperature in Rome?\"){\n    return [null, msg, null];\n} else if (msg.payload.content==\"What's your name?\") {\n    msg.payload.content = \"I am the NSDS Telegram Bot!\";\n} else {\n    msg.payload.content = \"I don't get what you're asking...\";\n}\n\nreturn [null, null, msg];\n\n\n",
+        "outputs": 3,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 350,
+        "y": 260,
+        "wires": [
+            [
+                "43a2259f59fda13b"
+            ],
+            [
+                "05a5a91151e46a84"
+            ],
+            [
+                "9bce373df90313ca"
+            ]
+        ]
+    },
+    {
+        "id": "43a2259f59fda13b",
+        "type": "openweathermap",
+        "z": "475ff0c8bcc70207",
+        "name": "Milan Weather",
+        "wtype": "current",
+        "lon": "",
+        "lat": "",
+        "city": "Milan",
+        "country": "IT",
+        "language": "en",
+        "x": 620,
+        "y": 160,
+        "wires": [
+            [
+                "b86eecca0a7bf060",
+                "d81a057a7ba7b801"
+            ]
+        ]
+    },
+    {
+        "id": "05a5a91151e46a84",
+        "type": "openweathermap",
+        "z": "475ff0c8bcc70207",
+        "name": "Rome Weather",
+        "wtype": "current",
+        "lon": "",
+        "lat": "",
+        "city": "Rome",
+        "country": "IT",
+        "language": "en",
+        "x": 620,
+        "y": 360,
+        "wires": [
+            [
+                "b86eecca0a7bf060",
+                "1b5e365ffac7c58b"
+            ]
+        ]
+    },
+    {
+        "id": "b86eecca0a7bf060",
+        "type": "function",
+        "z": "475ff0c8bcc70207",
+        "name": "Create message",
+        "func": "msg.payload = {\n    chatId: msg.originalMessage.chat.id,\n    type: 'message',\n    content: \"The temperature in \" + msg.payload.location + \" is \" + msg.payload.tempc\n};\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 900,
+        "y": 260,
+        "wires": [
+            [
+                "b31852b3e20af628",
+                "357688a293d00f8b"
+            ]
+        ]
+    },
+    {
+        "id": "b31852b3e20af628",
+        "type": "debug",
+        "z": "475ff0c8bcc70207",
+        "name": "Show Outgoing Msg!",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1200,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "d81a057a7ba7b801",
+        "type": "debug",
+        "z": "475ff0c8bcc70207",
+        "name": "Show Milan Weather",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 920,
+        "y": 120,
+        "wires": []
+    },
+    {
+        "id": "1b5e365ffac7c58b",
+        "type": "debug",
+        "z": "475ff0c8bcc70207",
+        "name": "Show Rome Weather",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 900,
+        "y": 440,
+        "wires": []
+    },
+    {
+        "id": "9bce373df90313ca",
+        "type": "chatbot-telegram-send",
+        "z": "475ff0c8bcc70207",
+        "bot": "4b3eacd28b0795a0",
+        "botProduction": "",
+        "track": false,
+        "passThrough": false,
+        "errorOutput": false,
+        "outputs": 0,
+        "x": 520,
+        "y": 519,
+        "wires": []
+    },
+    {
+        "id": "4b3eacd28b0795a0",
+        "type": "chatbot-telegram-node",
+        "botname": "Node-RED Lab",
+        "usernames": "",
+        "polling": "500",
+        "store": "",
+        "log": "",
+        "debug": false,
+        "skipMediaFiles": false,
+        "webHook": "",
+        "connectMode": "polling",
+        "storeMessages": true,
+        "enableMissionControl": false,
+        "inspectMessages": true,
+        "chatbotId": ""
+    },
+    {
+        "id": "fc5c93ec8b51a4df",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-contrib-chatbot": "1.2.4",
+            "node-red-node-openweathermap": "1.0.1"
+        }
+    }
+]

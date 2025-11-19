@@ -1,0 +1,101 @@
+[
+    {
+        "id": "788f5cfa70414e95",
+        "type": "tab",
+        "label": "Exercise 1.0",
+        "disabled": true,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "f1534fee1ae089d3",
+        "type": "chatbot-telegram-receive",
+        "z": "788f5cfa70414e95",
+        "bot": "4b3eacd28b0795a0",
+        "botProduction": "",
+        "x": 130,
+        "y": 140,
+        "wires": [
+            [
+                "9dc26f8e33c7944e",
+                "9d14ca318fe88abc"
+            ]
+        ]
+    },
+    {
+        "id": "013fe3b4ff4ca5e4",
+        "type": "chatbot-telegram-send",
+        "z": "788f5cfa70414e95",
+        "bot": "4b3eacd28b0795a0",
+        "botProduction": "",
+        "track": false,
+        "passThrough": false,
+        "errorOutput": false,
+        "outputs": 0,
+        "x": 470,
+        "y": 300,
+        "wires": []
+    },
+    {
+        "id": "9dc26f8e33c7944e",
+        "type": "debug",
+        "z": "788f5cfa70414e95",
+        "name": "Show Incoming Msg!",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 520,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "9d14ca318fe88abc",
+        "type": "function",
+        "z": "788f5cfa70414e95",
+        "name": "Compute Answer",
+        "func": "if (msg.payload.content==\"What's your name?\") {\n    msg.payload.content = \"I am the NSDS Telegram Bot!\";\n} else {\n    msg.payload.content = \"I don't get what you're asking...\";\n}\ndelete msg.ts;\ndelete msg.transport;\nmsg.payload.inbound = false;\nmsg.payload.fallback = null;\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 250,
+        "y": 240,
+        "wires": [
+            [
+                "013fe3b4ff4ca5e4"
+            ]
+        ]
+    },
+    {
+        "id": "4b3eacd28b0795a0",
+        "type": "chatbot-telegram-node",
+        "botname": "Node-RED Lab",
+        "usernames": "",
+        "polling": "500",
+        "store": "",
+        "log": "",
+        "debug": false,
+        "skipMediaFiles": false,
+        "webHook": "",
+        "connectMode": "polling",
+        "storeMessages": true,
+        "enableMissionControl": false,
+        "inspectMessages": true,
+        "chatbotId": ""
+    },
+    {
+        "id": "80fd0896da293ed7",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-contrib-chatbot": "1.2.4"
+        }
+    }
+]
