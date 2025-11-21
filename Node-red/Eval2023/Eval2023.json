@@ -1,0 +1,334 @@
+[
+    {
+        "id": "e2b21af98b58e9e6",
+        "type": "tab",
+        "label": "Evaluation Lab 2023",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "d413e2f03dcd05b2",
+        "type": "chatbot-telegram-receive",
+        "z": "e2b21af98b58e9e6",
+        "bot": "4b3eacd28b0795a0",
+        "botProduction": "",
+        "x": 250,
+        "y": 300,
+        "wires": [
+            [
+                "5cd544a96231f081"
+            ]
+        ]
+    },
+    {
+        "id": "74834814b3696779",
+        "type": "openweathermap",
+        "z": "e2b21af98b58e9e6",
+        "name": "Milan Forecast",
+        "wtype": "forecast",
+        "lon": "",
+        "lat": "",
+        "city": "Milan",
+        "country": "Italy",
+        "language": "en",
+        "x": 680,
+        "y": 180,
+        "wires": [
+            [
+                "ad0188ebf55c8bde"
+            ]
+        ]
+    },
+    {
+        "id": "7c60ca0408287675",
+        "type": "openweathermap",
+        "z": "e2b21af98b58e9e6",
+        "name": "Rome Forecast",
+        "wtype": "forecast",
+        "lon": "",
+        "lat": "",
+        "city": "Rome",
+        "country": "Italy",
+        "language": "en",
+        "x": 680,
+        "y": 260,
+        "wires": [
+            [
+                "5e5ba0aa0bd6fe76"
+            ]
+        ]
+    },
+    {
+        "id": "5cd544a96231f081",
+        "type": "function",
+        "z": "e2b21af98b58e9e6",
+        "name": "Redirect Msg",
+        "func": "let counter = flow.get(\"Requests\");\ncounter += 1;\nflow.set(\"Requests\", counter);\n\ndelete msg.ts;\ndelete msg.transport;\nmsg.payload.inbound = false;\nmsg.payload.fallback = null;\n\nif (msg.payload.content == \"What tomorrow’s forecast in Milan?\"){\n    return [msg, null, null, null];\n} else if (msg.payload.content == \"What tomorrow’s forecast in Rome?\"){\n    return [null, msg, null, null];\n} else if (msg.payload.content == \"What’s the expected wind speed in two days in Milan?\"){\n    return [null, null, msg, null];\n} else if (msg.payload.content == \"What’s the expected wind speed in two days in Rome?\"){\n    return [null, null, null, msg];\n}",
+        "outputs": 4,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "// Code added here will be run once\n// whenever the node is started.\nflow.set(\"Requests\", 0);",
+        "finalize": "",
+        "libs": [],
+        "x": 450,
+        "y": 300,
+        "wires": [
+            [
+                "74834814b3696779"
+            ],
+            [
+                "7c60ca0408287675"
+            ],
+            [
+                "3d2ec3cf7a377851"
+            ],
+            [
+                "ce959a5bf25bddf4"
+            ]
+        ]
+    },
+    {
+        "id": "3d2ec3cf7a377851",
+        "type": "openweathermap",
+        "z": "e2b21af98b58e9e6",
+        "name": "Milan Forecast",
+        "wtype": "forecast",
+        "lon": "",
+        "lat": "",
+        "city": "Milan",
+        "country": "Italy",
+        "language": "en",
+        "x": 680,
+        "y": 340,
+        "wires": [
+            [
+                "d1b31d55db9c147b"
+            ]
+        ]
+    },
+    {
+        "id": "ce959a5bf25bddf4",
+        "type": "openweathermap",
+        "z": "e2b21af98b58e9e6",
+        "name": "Rome Forecast",
+        "wtype": "forecast",
+        "lon": "",
+        "lat": "",
+        "city": "Rome",
+        "country": "Italy",
+        "language": "en",
+        "x": 680,
+        "y": 420,
+        "wires": [
+            [
+                "e7c9c684c294c616"
+            ]
+        ]
+    },
+    {
+        "id": "313a25e021b077bb",
+        "type": "chatbot-telegram-send",
+        "z": "e2b21af98b58e9e6",
+        "bot": "4b3eacd28b0795a0",
+        "botProduction": "",
+        "track": false,
+        "passThrough": false,
+        "errorOutput": false,
+        "outputs": 0,
+        "x": 1370,
+        "y": 300,
+        "wires": []
+    },
+    {
+        "id": "ad0188ebf55c8bde",
+        "type": "function",
+        "z": "e2b21af98b58e9e6",
+        "name": "Detect changes",
+        "func": "let forecast = msg.payload;\nlet description = forecast[1].weather[0].description;\nlet city = msg.location.city;\n\nmsg.payload = \"Tomorrow’s forecast for \" + city + \" is \" + description;\n\nlet lastForecast = context.get(\"MilanForecast\");\n\nif (description !== lastForecast) {\n    context.set(\"MilanForecast\", description);\n    msg.payload += \" It changed since the last time I was asked!\";\n} else {\n    msg.payload += \" It is the same as the last time I was asked!\";\n}\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "// Code added here will be run once\n// whenever the node is started.\ncontext.set(\"MilanForecast\", \"\");",
+        "finalize": "",
+        "libs": [],
+        "x": 940,
+        "y": 180,
+        "wires": [
+            [
+                "05b501ba1924e1b0"
+            ]
+        ]
+    },
+    {
+        "id": "05b501ba1924e1b0",
+        "type": "chatbot-message",
+        "z": "e2b21af98b58e9e6",
+        "name": "",
+        "message": [
+            {
+                "message": "{{payload}}"
+            }
+        ],
+        "language": "none",
+        "x": 1170,
+        "y": 300,
+        "wires": [
+            [
+                "313a25e021b077bb"
+            ]
+        ]
+    },
+    {
+        "id": "5e5ba0aa0bd6fe76",
+        "type": "function",
+        "z": "e2b21af98b58e9e6",
+        "name": "Detect changes",
+        "func": "let forecast = msg.payload;\nlet description = forecast[1].weather[0].description;\nlet city = msg.location.city;\n\nmsg.payload = \"Tomorrow’s forecast for \" + city + \" is \" + description;\n\nlet lastForecast = context.get(\"RomeForecast\");\n\nif (description !== lastForecast) {\n    context.set(\"RomeForecast\", description);\n    msg.payload += \" It changed since the last time I was asked!\";\n} else {\n    msg.payload += \" It is the same as the last time I was asked!\";\n}\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "// Code added here will be run once\n// whenever the node is started.\ncontext.set(\"RomeForecast\", \"\");",
+        "finalize": "",
+        "libs": [],
+        "x": 940,
+        "y": 260,
+        "wires": [
+            [
+                "05b501ba1924e1b0"
+            ]
+        ]
+    },
+    {
+        "id": "d1b31d55db9c147b",
+        "type": "function",
+        "z": "e2b21af98b58e9e6",
+        "name": "Detect changes",
+        "func": "let forecast = msg.payload;\nlet wind = forecast[2].wind.speed;\nlet city = msg.location.city;\n\nmsg.payload = \"Expected wind speed in \" + city + \" in two days is \" + wind;\n\nlet lastForecast = context.get(\"MilanWind\");\n\nif (wind !== lastForecast) {\n    context.set(\"MilanWind\", wind);\n    msg.payload += \" It changed since the last time I was asked!\";\n} else {\n    msg.payload += \" It is the same as the last time I was asked!\";\n}\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "// Code added here will be run once\n// whenever the node is started.\ncontext.set(\"MilanWind\", -1);",
+        "finalize": "",
+        "libs": [],
+        "x": 940,
+        "y": 340,
+        "wires": [
+            [
+                "05b501ba1924e1b0"
+            ]
+        ]
+    },
+    {
+        "id": "e7c9c684c294c616",
+        "type": "function",
+        "z": "e2b21af98b58e9e6",
+        "name": "Detect changes",
+        "func": "let forecast = msg.payload;\nlet wind = forecast[2].wind.speed;\nlet city = msg.location.city;\n\nmsg.payload = \"Expected wind speed in \" + city + \" in two days is \" + wind;\n\nlet lastForecast = context.get(\"RomeWind\");\n\nif (wind !== lastForecast) {\n    context.set(\"RomeWind\", wind);\n    msg.payload += \" It changed since the last time I was asked!\";\n} else {\n    msg.payload += \" It is the same as the last time I was asked!\";\n}\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "// Code added here will be run once\n// whenever the node is started.\ncontext.set(\"RomeWind\", -1);",
+        "finalize": "",
+        "libs": [],
+        "x": 940,
+        "y": 420,
+        "wires": [
+            [
+                "05b501ba1924e1b0"
+            ]
+        ]
+    },
+    {
+        "id": "429a525ddf2ac3b4",
+        "type": "inject",
+        "z": "e2b21af98b58e9e6",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "60",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 370,
+        "y": 560,
+        "wires": [
+            [
+                "c1857e8769b68398"
+            ]
+        ]
+    },
+    {
+        "id": "f08b7db55e693ef4",
+        "type": "file",
+        "z": "e2b21af98b58e9e6",
+        "name": "Write Requests Every Minute",
+        "filename": "Requests",
+        "filenameType": "str",
+        "appendNewline": true,
+        "createDir": true,
+        "overwriteFile": "false",
+        "encoding": "none",
+        "x": 780,
+        "y": 560,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "c1857e8769b68398",
+        "type": "function",
+        "z": "e2b21af98b58e9e6",
+        "name": "Get Requests",
+        "func": "let counter = flow.get(\"Requests\");\nmsg.payload = counter;\nflow.set(\"Requests\", 0);\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 560,
+        "y": 560,
+        "wires": [
+            [
+                "f08b7db55e693ef4"
+            ]
+        ]
+    },
+    {
+        "id": "4b3eacd28b0795a0",
+        "type": "chatbot-telegram-node",
+        "botname": "Node-RED Lab",
+        "usernames": "",
+        "polling": "500",
+        "store": "",
+        "log": "",
+        "debug": false,
+        "skipMediaFiles": false,
+        "webHook": "",
+        "connectMode": "polling",
+        "storeMessages": true,
+        "enableMissionControl": false,
+        "inspectMessages": true,
+        "chatbotId": ""
+    },
+    {
+        "id": "52f202694752162a",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-contrib-chatbot": "1.2.4",
+            "node-red-node-openweathermap": "1.0.1"
+        }
+    }
+]
