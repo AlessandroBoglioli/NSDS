@@ -1,0 +1,242 @@
+[
+    {
+        "id": "4a8621b18bca82ba",
+        "type": "tab",
+        "label": "Flow 2",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "3a683440d3834330",
+        "type": "chatbot-telegram-receive",
+        "z": "4a8621b18bca82ba",
+        "bot": "4b3eacd28b0795a0",
+        "botProduction": "",
+        "x": 130,
+        "y": 120,
+        "wires": [
+            [
+                "8eaeb2923dfd81d9"
+            ]
+        ]
+    },
+    {
+        "id": "f7dd095915e2d394",
+        "type": "chatbot-telegram-send",
+        "z": "4a8621b18bca82ba",
+        "bot": "4b3eacd28b0795a0",
+        "botProduction": "",
+        "track": false,
+        "passThrough": false,
+        "errorOutput": false,
+        "outputs": 0,
+        "x": 1570,
+        "y": 120,
+        "wires": []
+    },
+    {
+        "id": "215634437613e428",
+        "type": "openweathermap",
+        "z": "4a8621b18bca82ba",
+        "name": "OpenWeather",
+        "wtype": "current",
+        "lon": "",
+        "lat": "",
+        "city": "",
+        "country": "",
+        "language": "en",
+        "x": 1200,
+        "y": 120,
+        "wires": [
+            [
+                "265a66402f9b10ef"
+            ]
+        ]
+    },
+    {
+        "id": "8eaeb2923dfd81d9",
+        "type": "function",
+        "z": "4a8621b18bca82ba",
+        "name": "Router",
+        "func": "let words = msg.payload.content.split(\" \");\n\nif (words[0] == \"TRACK\" && words.length == 3) {\n    msg.payload = {\n        id: msg.originalMessage.from.id,\n        city: words[1],\n        country: words[2],\n    }\n    return [msg, null, null];\n}\nif (words[0] == \"QUERY\" && words.length == 3){\n    msg.location = {\n        city : words[1],\n        country : words[2],\n    }\n    return [null, msg, null];\n} \nif (words[0] == \"REPORT\" && words.length == 1){\n    return [null, null, msg];\n}",
+        "outputs": 3,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 310,
+        "y": 120,
+        "wires": [
+            [
+                "5a125a3423789a97"
+            ],
+            [
+                "215634437613e428"
+            ],
+            [
+                "3485d6b70d28f22d"
+            ]
+        ]
+    },
+    {
+        "id": "265a66402f9b10ef",
+        "type": "chatbot-message",
+        "z": "4a8621b18bca82ba",
+        "name": "",
+        "message": [
+            {
+                "message": "The temperature in {{payload.location}} is {{payload.tempc}}! "
+            }
+        ],
+        "language": "none",
+        "x": 1370,
+        "y": 120,
+        "wires": [
+            [
+                "f7dd095915e2d394"
+            ]
+        ]
+    },
+    {
+        "id": "5a125a3423789a97",
+        "type": "file",
+        "z": "4a8621b18bca82ba",
+        "name": "Write file",
+        "filename": "preferences",
+        "filenameType": "str",
+        "appendNewline": true,
+        "createDir": true,
+        "overwriteFile": "false",
+        "encoding": "none",
+        "x": 480,
+        "y": 60,
+        "wires": [
+            [
+                "38316f2b6abf6fea"
+            ]
+        ]
+    },
+    {
+        "id": "38316f2b6abf6fea",
+        "type": "chatbot-message",
+        "z": "4a8621b18bca82ba",
+        "name": "",
+        "message": [
+            {
+                "message": "Tracking temperature for {{payload.city}}!"
+            }
+        ],
+        "language": "none",
+        "x": 1370,
+        "y": 60,
+        "wires": [
+            [
+                "f7dd095915e2d394"
+            ]
+        ]
+    },
+    {
+        "id": "3485d6b70d28f22d",
+        "type": "file in",
+        "z": "4a8621b18bca82ba",
+        "name": "Read File",
+        "filename": "preferences",
+        "filenameType": "str",
+        "format": "lines",
+        "chunk": false,
+        "sendError": false,
+        "encoding": "none",
+        "allProps": true,
+        "x": 480,
+        "y": 180,
+        "wires": [
+            [
+                "179c6f85187a0c1e"
+            ]
+        ]
+    },
+    {
+        "id": "29e327db5f53e90f",
+        "type": "function",
+        "z": "4a8621b18bca82ba",
+        "name": "Send Locations",
+        "func": "if (msg.originalMessage.from.id == msg.payload.id){\n    msg.location = {\n        city : msg.payload.city,\n        country : msg.payload.country,\n    }\n    return msg;\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 980,
+        "y": 180,
+        "wires": [
+            [
+                "215634437613e428"
+            ]
+        ]
+    },
+    {
+        "id": "b72745c8f80304f0",
+        "type": "json",
+        "z": "4a8621b18bca82ba",
+        "name": "",
+        "property": "payload",
+        "action": "obj",
+        "pretty": false,
+        "x": 810,
+        "y": 180,
+        "wires": [
+            [
+                "29e327db5f53e90f"
+            ]
+        ]
+    },
+    {
+        "id": "179c6f85187a0c1e",
+        "type": "function",
+        "z": "4a8621b18bca82ba",
+        "name": "Json Filter",
+        "func": "if (msg.payload !== \"\"){\n    return msg;\n}\nreturn null;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 650,
+        "y": 180,
+        "wires": [
+            [
+                "b72745c8f80304f0"
+            ]
+        ]
+    },
+    {
+        "id": "4b3eacd28b0795a0",
+        "type": "chatbot-telegram-node",
+        "botname": "Node-RED Lab",
+        "usernames": "",
+        "polling": "500",
+        "store": "",
+        "log": "",
+        "debug": false,
+        "skipMediaFiles": false,
+        "webHook": "",
+        "connectMode": "polling",
+        "storeMessages": true,
+        "enableMissionControl": false,
+        "inspectMessages": true,
+        "chatbotId": ""
+    },
+    {
+        "id": "c1cedf1363e7b040",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-contrib-chatbot": "1.2.4",
+            "node-red-node-openweathermap": "1.0.1"
+        }
+    }
+]
