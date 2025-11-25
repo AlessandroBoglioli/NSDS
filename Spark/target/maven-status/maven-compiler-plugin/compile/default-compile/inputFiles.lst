@@ -1,0 +1,17 @@
+C:\Users\utente\Desktop\Università\Networked software for distributed systems\Repo\Spark\src\main\java\it\polimi\spark\batch\bank\Bank.java
+C:\Users\utente\Desktop\Università\Networked software for distributed systems\Repo\Spark\src\main\java\it\polimi\spark\batch\iterative\InvestmentSimulator.java
+C:\Users\utente\Desktop\Università\Networked software for distributed systems\Repo\Spark\src\main\java\it\polimi\spark\batch\iterative\InvestmentSimulatorUnpersist.java
+C:\Users\utente\Desktop\Università\Networked software for distributed systems\Repo\Spark\src\main\java\it\polimi\spark\batch\wordcount\WordCount.java
+C:\Users\utente\Desktop\Università\Networked software for distributed systems\Repo\Spark\src\main\java\it\polimi\spark\batch\wordcount\WordCountModified.java
+C:\Users\utente\Desktop\Università\Networked software for distributed systems\Repo\Spark\src\main\java\it\polimi\spark\common\Consts.java
+C:\Users\utente\Desktop\Università\Networked software for distributed systems\Repo\Spark\src\main\java\it\polimi\spark\ml\CrossValidationExample.java
+C:\Users\utente\Desktop\Università\Networked software for distributed systems\Repo\Spark\src\main\java\it\polimi\spark\ml\DecisionTreeClassification.java
+C:\Users\utente\Desktop\Università\Networked software for distributed systems\Repo\Spark\src\main\java\it\polimi\spark\ml\JavaDocument.java
+C:\Users\utente\Desktop\Università\Networked software for distributed systems\Repo\Spark\src\main\java\it\polimi\spark\ml\JavaLabeledDocument.java
+C:\Users\utente\Desktop\Università\Networked software for distributed systems\Repo\Spark\src\main\java\it\polimi\spark\ml\KMeansClustering.java
+C:\Users\utente\Desktop\Università\Networked software for distributed systems\Repo\Spark\src\main\java\it\polimi\spark\ml\PipelineExample.java
+C:\Users\utente\Desktop\Università\Networked software for distributed systems\Repo\Spark\src\main\java\it\polimi\spark\streaming\enrichment\EventEnrichment.java
+C:\Users\utente\Desktop\Università\Networked software for distributed systems\Repo\Spark\src\main\java\it\polimi\spark\streaming\event_time\WindowedCount.java
+C:\Users\utente\Desktop\Università\Networked software for distributed systems\Repo\Spark\src\main\java\it\polimi\spark\streaming\wordcount\StreamingWordCount.java
+C:\Users\utente\Desktop\Università\Networked software for distributed systems\Repo\Spark\src\main\java\it\polimi\spark\streaming\wordcount\StreamingWordCountWithState.java
+C:\Users\utente\Desktop\Università\Networked software for distributed systems\Repo\Spark\src\main\java\it\polimi\spark\streaming\wordcount\StructuredStreamingWordCount.java
