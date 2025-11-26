@@ -30,7 +30,7 @@ import static org.apache.spark.sql.functions.window;
  */
 public class EventEnrichment {
     public static void main(String[] args) throws TimeoutException, IOException {
-        final String master = args.length > 0x   ? args[0] : "local[4]";
+        final String master = args.length > 0 ? args[0] : "local[4]";
         final String socketHost = args.length > 1 ? args[1] : "localhost";
         final int socketPort = args.length > 2 ? Integer.parseInt(args[2]) : 9999;
         final String filePath = args.length > 3 ? args[3] : "./";
