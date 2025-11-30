@@ -92,85 +92,102 @@ public class SparkGroup47 {
          * TODO: Enter your code below
          */
 
+        courses.cache();
+        videos.cache();
+
         /*
          * Query Q1. Compute the total number of lecture hours per prof
          */
 
         Dataset<Row> q1 = profs.join(
                     courses,
-                    "course_name",
-                    "left"
-                ).groupBy("prof_name").sum("course_hours")
-                .orderBy("prof_name")                                       // Just to be sure about printing
+                    "course_name")
+                .groupBy("prof_name")
+                .sum("course_hours")
+                .orderBy("prof_name")  // Just to be sure about printing
                 .select("prof_name", "sum(course_hours)");
 
 
-        //q1.show(1000);
+        q1.show(1000);
 
         /*
          * Query Q2. For each course, compute the total duration of all the visualizations of videos of that course,
          * computed over a minute, updated every 10 seconds
          */
 
-//        final StreamingQuery q2 = visualizations
-//                .join(
-//                        videos,
-//                        visualizations.col("value").equalTo(videos.col("video_id"))
-//                )
-//                .groupBy(
-//                        window(col("timestamp"), "60 seconds", "10 seconds"),
-//                        videos.col("course_name")
-//                )
-//                .agg(
-//                        sum(col("video_duration")).alias("total_visualization_duration")
-//                )
-//                .writeStream()
-//                .outputMode("complete")
-//                .format("console")
-//                .start();
+        final StreamingQuery q2 = visualizations
+                .join(
+                        videos,
+                        visualizations.col("value").equalTo(videos.col("video_id"))
+                )
+                .groupBy(
+                        window(col("timestamp"), "60 seconds", "10 seconds"),
+                        videos.col("course_name")
+                )
+                .agg(
+                        sum(col("video_duration")).alias("total_visualization_duration")
+                )
+                .writeStream()
+                .outputMode("complete")
+                .format("console")
+                .start();
 
         /* Query Q2 Variant: for each course, compute the total number of
          * visualizations of videos of that course, computed
          * over 1 minute, updated every 10 seconds
          */
 
-//        final StreamingQuery q2Variant = visualizations.join(
-//                videos, visualizations.col("value").equalTo(videos.col("video_id"))
-//        ).join(
-//                courses,
-//                        videos.col("course_name").equalTo(courses.col("course_name"))
-//        ).groupBy(
-//                videos.col("course_name"),
-//                window(col("timestamp"), "60 seconds", "10 seconds")
-//        ).count().as("total_views_per_video")
-//                .join(
-//                    courses,
-//                    videos.col("course_name").equalTo(courses.col("course_name"))
-//                ).withColumn("ratio", col("total_views_per_video").divide(col("course_students")))
-//                .writeStream()
-//                .outputMode("update")
-//                .format("console")
-//                .start();
+        final StreamingQuery q2Variant = visualizations.join(
+                videos, visualizations.col("value").equalTo(videos.col("video_id"))
+        ).join(
+                courses,
+                        videos.col("course_name").equalTo(courses.col("course_name"))
+        ).groupBy(
+                videos.col("course_name"),
+                window(col("timestamp"), "60 seconds", "10 seconds")
+        ).count().as("total_views_per_video")
+                .join(
+                    courses,
+                    videos.col("course_name").equalTo(courses.col("course_name"))
+                ).withColumn("ratio", col("total_views_per_video").divide(col("course_students")))
+                .writeStream()
+                .outputMode("update")
+                .format("console")
+                .start();
 
         /*
          * Query Q3. For each video, compute the total number of visualizations of that video
          * with respect to the number of students in the course in which the video is used.
          */
 
-        final StreamingQuery q3 = visualizations.join(
-                videos,
-                visualizations.col("value").equalTo(videos.col("video_id"))
-        ).groupBy(
-                videos.col("video_id")
-        ).count()
+        final Dataset<Row> videosCourses = videos
+                .join(courses, "course_name");
+
+        final Dataset<Row> visualizationsCount = videos
+                .join(
+                        visualizations,
+                        visualizations.col("value").equalTo(videos.col("video_id"))
+                )
+                .groupBy("video_id")
+                .agg(count("value").as("visualizations_count"));
+
+        final Dataset<Row> visualizationsCountByStudents = visualizationsCount
+                .join(
+                        videosCourses,
+                        "video_id"
+                )
+                .drop("course_hours", "video_duration")
+                .withColumn("visualizations_count", col("visualizations_count").divide(col("course_students")));
+
+        final StreamingQuery q3 = visualizationsCountByStudents
                 .writeStream()
                 .outputMode("update")
                 .format("console")
                 .start();
 
         try {
-            //q2.awaitTermination();
-            //q2Variant.awaitTermination();
+            q2.awaitTermination();
+            q2Variant.awaitTermination();
             q3.awaitTermination();
         } catch (final StreamingQueryException e) {
             e.printStackTrace();
