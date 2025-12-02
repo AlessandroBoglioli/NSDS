@@ -4,6 +4,8 @@ import it.polimi.spark.common.Consts;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
+import org.apache.spark.sql.streaming.StreamingQuery;
+import org.apache.spark.sql.streaming.StreamingQueryException;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
@@ -63,6 +65,22 @@ public class EventEnrichment {
         // Query: count the number of products of each class in the stream
 
         // TODO
+
+        final StreamingQuery query = inStreamDF
+                .join(productsClassification, inStreamDF.col("product").equalTo(productsClassification.col("product")))
+                .groupBy("classification")
+                .count()
+                .writeStream()
+                .outputMode("update")
+                .format("console")
+                .start();
+
+        try {
+            query.awaitTermination();
+        } catch (final StreamingQueryException e) {
+            e.printStackTrace();
+        }
+
 
         spark.close();
     }
