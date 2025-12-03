@@ -4,6 +4,7 @@
 
 // Simple ping pong program to exemplify MPI_Send and MPI_Recs
 // Assume only two processes
+
 int main(int argc, char** argv) {
   const int tot_msgs = 100;
   
@@ -15,6 +16,19 @@ int main(int argc, char** argv) {
   int num_msgs = 0;
 
   // TODO
+  
+  int other_rank = 1 - my_rank;
+  
+  while (num_msgs < tot_msgs) {
+    if (num_msgs % 2 == my_rank) {
+      num_msgs++;
+      MPI_Send(&num_msgs, 1, MPI_INT, other_rank, 0, MPI_COMM_WORLD);
+      printf("Process %d sent message %d\n", my_rank, num_msgs);
+    } else {
+      MPI_Recv(&num_msgs, 1, MPI_INT, other_rank, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+      printf("Process %d received message %d\n", my_rank, num_msgs);
+    }
+  }
   
   MPI_Finalize();
 }

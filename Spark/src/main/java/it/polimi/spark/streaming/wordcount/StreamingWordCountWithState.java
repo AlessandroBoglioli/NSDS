@@ -30,7 +30,7 @@ public class StreamingWordCountWithState {
         // Checkpoint directory where the state is stored
         sc.checkpoint("/tmp/");
 
-        final Function3<String, Optional<Integer>, State<Integer>, Tuple2<String, Integer>> mapFunction = //
+        final Function3<String, Optional<Integer>, State<Integer>, Tuple2<String, Integer>> mapFunction =
                 (word, count, state) -> {
                     final int sum = count.orElse(0) + (state.exists() ? state.get() : 0);
                     state.update(sum);

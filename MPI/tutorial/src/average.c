@@ -53,7 +53,50 @@ int main(int argc, char** argv) {
   }
 
   // TODO
-  
+
+  int *local_arr = (int *) malloc(sizeof(int) * num_elements_per_proc);
+
+  MPI_Scatter(
+	global_arr, 
+	num_elements_per_proc, 
+	MPI_INT, 
+	local_arr, 
+	num_elements_per_proc, 
+	MPI_INT, 
+	0, 
+	MPI_COMM_WORLD);
+
+  float local_average = compute_average(local_arr, num_elements_per_proc);
+
+  float *gather_buffer = NULL;
+  if (my_rank == 0) {
+    gather_buffer = (float *) malloc(sizeof(float) * world_size);
+  }
+
+  MPI_Gather(
+	&local_average, 
+	1, 
+	MPI_FLOAT, 
+	gather_buffer, 
+	1, 
+	MPI_FLOAT, 
+	0, 
+	MPI_COMM_WORLD);
+
+  if (my_rank == 0) {
+    float result = compute_final_average(gather_buffer, world_size);
+    printf("The average is %f\n", result);
+
+    float sequential_result = compute_average(global_arr, num_elements_per_proc * world_size);
+    printf("The average (sequential computation) is %f\n", sequential_result);
+  }
+
+  if (my_rank == 0) {
+    free(global_arr);
+    free(gather_buffer);
+  }
+  free(local_arr);
+
   MPI_Barrier(MPI_COMM_WORLD);
   MPI_Finalize();
 }

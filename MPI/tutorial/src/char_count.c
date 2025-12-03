@@ -15,12 +15,14 @@
 //
 // In the second phase, each process becomes responsible for some of the characters and
 // aggregates the partial counts for those characters.
- typedef struct pair_char_pair_t {
+
+typedef struct pair_char_pair_t {
   char c;
   int count;
 } char_int_pair;
 
 int main(int argc, char** argv) {
+
   const int num_letters = 26;
   const char *files_path = "../files/in";
   
@@ -75,8 +77,51 @@ int main(int argc, char** argv) {
   // Sending and receiving each letter
   // TODO
   
+  MPI_Request req;
+  for (int i = 0; i < num_letters; i++) {
+    int receiver = i % world_size;
+    
+    if (receiver == my_rank) {
+      
+      for (int p = 0; p < world_size - 1; p++) {
+	char_int_pair rec_buffer;
+	
+	MPI_Recv(
+		&rec_buffer, 
+		1, 
+		mpi_char_int_pair, 
+		MPI_ANY_SOURCE, 
+		MPI_ANY_TAG, 
+		MPI_COMM_WORLD, 
+		MPI_STATUS_IGNORE);
+
+	local_count[i].count += rec_buffer.count;
+      }
+    }
+    
+    else {
+      MPI_Isend(
+	&local_count[i], 
+	1, 
+	mpi_char_int_pair, 
+	receiver, 
+	0, 
+	MPI_COMM_WORLD, 
+	&req);
+    }
+  }
+  
   // When done, everybody prints its own results
   // TODO
+  
+  for (int i=0; i<num_letters; i++) {
+    int owner = i % world_size;
+    if (owner == my_rank) {
+      printf("%c -> %d\n", local_count[i].c, local_count[i].count);
+    }
+  }
+
+  free(local_count);
   
   MPI_Type_free(&mpi_char_int_pair);
   MPI_Finalize();
