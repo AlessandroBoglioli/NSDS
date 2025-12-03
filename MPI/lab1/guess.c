@@ -1,121 +1,97 @@
 #include <mpi.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <time.h>
-#include <math.h>
 #include <stdbool.h>
-#include <limits.h> 
+#include <string.h>
+#include <math.h>
+#include <time.h>
 
 int rank;
 int num_procs;
 
-
 const int num_rounds = 1000;
-
 
 const int min_num = 1;
 const int max_num = 1000;
-
 
 // Array, one element per process
 // The leader board, instantiated and used in process 0
 int *leaderboard = NULL;
 
-
 // Array, one element per process
 // The array of number selected in the current round
 int *selected_numbers = NULL;
 
-
 // The leader for the current round
 int leader = 0;
 
-
 // Allocate dynamic variables
 void allocate_vars() {
-	selected_numbers = (int *) malloc(sizeof(int) * num_procs);
-	leaderboard = (int *) malloc(sizeof(int) * num_procs);
-	memset ((void *) leaderboard, 0, sizeof (int) * num_procs);
+  leaderboard = (int*)malloc(num_procs * sizeof(int));
+  memset(leaderboard, 0, num_procs * sizeof(int));
+  
+  selected_numbers = (int*)malloc(num_procs * sizeof(int));
 }
-
 
 // Deallocate dynamic variables
 void free_vars() {
-  	free(selected_numbers);
-	free(leaderboard);
+  free(leaderboard);
+  free(selected_numbers);
 }
-
 
 // Select a random number between min_num and max_num
 int select_number() {
   return min_num + rand() % (max_num - min_num + 1);
 }
 
-
 // Function used to communicate the selected number to the leader
 void send_num_to_leader(int num) {
-	MPI_Gather(
-		&num,
-		1,
-		MPI_INT,
-		selected_numbers,
-		1,
-		MPI_INT,
-		leader,
-		MPI_COMM_WORLD);
+  MPI_Gather(&num, 1, MPI_INT, selected_numbers, 1, MPI_INT, leader, MPI_COMM_WORLD);  
 }
-
 
 // Compute the winner (-1 if there is no winner)
 // Function invoked by the leader only
 int compute_winner(int number_to_guess) {
-	int min_diff = max_num;
-	int winner_rank;
-	bool tie = 0;
-	for (int i = 0; i < num_procs; i++){
-		if (abs(number_to_guess - selected_numbers[i]) < min_diff){
-			min_diff = abs(number_to_guess - selected_numbers[i]);
-			winner_rank = i;
-			tie = 0;
-		}
-		else if (number_to_guess - selected_numbers[i] == min_diff)
-			tie = 1;
-	}
-	if (tie) return -1;
-  	return winner_rank;
-}
+  int winner = -1;
+  int diff;
+  int min = max_num - min_num + 1;
+  bool tie = false;
 
+  for (int i=0; i<num_procs; i++) {
+    diff = abs(selected_numbers[i] - number_to_guess);
+
+    if (diff < min) {
+      winner = i;
+      tie = false;
+      min = diff;
+    }
+    else if (diff == min) {
+      tie = true;
+    }
+  }
+
+  if (tie) 
+    return -1;
+  else
+    return winner;
+}
 
 // Function used to communicate the winner to everybody
 void send_winner(int *winner) {
-	
-	MPI_Bcast(
-		winner,
-		1,
-		MPI_INT,
-		leader,
-		MPI_COMM_WORLD);
-
+  MPI_Bcast(winner, 1, MPI_INT, leader, MPI_COMM_WORLD);
 }
-
 
 // Update leader
 void update_leader(int winner) {
-  	if (winner >= 0)
-		leader = winner;
-
+  if (winner >= 0 && winner < num_procs)
+    leader = winner;
 }
-
 
 // Update leaderboard (invoked by process 0 only)
 void update_leaderboard(int winner) {
-  	if (winner >= 0) {
-    		leaderboard[winner]++;
-  	}	
-
+  if (winner >= 0 && winner < num_procs)
+    leaderboard[winner]++;
 }
-
 
 // Print the leaderboard
 void print_leaderboard(int round, int winner) {
@@ -127,21 +103,17 @@ void print_leaderboard(int round, int winner) {
   }
 }
 
-
 int main(int argc, char** argv) { 
   MPI_Init(NULL, NULL);
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
   srand(time(NULL) + rank);
 
-
   allocate_vars();
-
 
   for (int round=0; round<num_rounds; round++) {
     int selected_number = select_number();
     send_num_to_leader(selected_number);
-
 
     int winner;
     if (rank == leader) {
@@ -157,10 +129,8 @@ int main(int argc, char** argv) {
     }
   }
 
-
   MPI_Barrier(MPI_COMM_WORLD);
   free_vars();
   
   MPI_Finalize();
 }
-

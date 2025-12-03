@@ -1,11 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 #include <math.h>
+#include <time.h>
 #include <mpi.h>
 
 const int num_iter_per_proc = 10 * 1000 * 1000;
-
 
 int main() {
   MPI_Init(NULL, NULL);
@@ -17,35 +16,22 @@ int main() {
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
 
-
   srand(time(NULL) + rank);
 
+  double x, y;
+  int localSum = 0;
 
-  // TODO
+  for (int i = 0; i < num_iter_per_proc; i++) {
+    x = (double)rand() / (double)RAND_MAX;
+    y = (double)rand() / (double)RAND_MAX;
 
-  float x, y;
-  int local_count = 0;
-
-  for (int i = 0; i < num_iter_per_proc; i++){
-	x = rand() / (float) RAND_MAX;
-	y = rand() / (float) RAND_MAX;
-
-	if (pow(x,2) + pow(y,2) <= 1){
-		local_count++;
-	}
-
+    if (sqrt(x*x + y*y) <= sqrt(1.0) && x*x + y*y <= 1.0) {
+      localSum++;
+    }
   }
 
-  MPI_Reduce(
-	&local_count,
-	&sum,
-	1,
-	MPI_INT,
-	MPI_SUM,
-	0,
-	MPI_COMM_WORLD);
-
-
+  MPI_Reduce(&localSum, &sum, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+  
   if (rank == 0) {
     double pi = (4.0*sum) / (num_iter_per_proc*num_procs);
     printf("Pi = %f\n", pi);
@@ -54,4 +40,3 @@ int main() {
   MPI_Finalize();
   return 0;
 }
-
