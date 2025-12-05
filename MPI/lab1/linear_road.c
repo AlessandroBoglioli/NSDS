@@ -4,16 +4,6 @@
 #include <string.h>
 #include <time.h>
 
-/**
- * Group number:
- *
- * Group members
- * Member 1
- * Member 2
- * Member 3
- *
- **/
-
 // Set DEBUG 1 if you want car movement to be deterministic
 #define DEBUG 0
 
@@ -53,21 +43,62 @@ int main(int argc, char** argv) {
   srand(time(NULL) + rank);
   
   // TODO: define and init variables
-  
+
+  int num_segments_per_proc = num_segments/num_procs;
+  int *local_road = (int *) malloc(sizeof(int) * num_segments_per_proc);
+  memset( (void *) local_road, 0, sizeof(int) * num_segments_per_proc);
+
   // Simulate for num_iterations iterations
-  for (int it = 0; it < num_iterations; ++it) {
+  for (int i = 0; i < num_iterations; ++i) {
     // Move cars across segments
     // New cars may enter in the first segment
     // Cars may exit from the last segment
 
+    int car_exiting = 0;
+    for (int j = 0; j < local_road[num_segments_per_proc - 1]; j++){
+	   if (move_next_segment){
+		  car_exiting++;
+	   }
+    }
+    local_road[num_segments_per_proc - 1] -= car_exiting;
+    if (rank < num_procs - 1) {
+	   MPI_Send(&car_exiting, 1, MPI_INT, rank + 1, 0, MPI_COMM_WORLD);
+    }
+
+    for (int j = num_segments_per_proc - 2; j >= 0; j--){
+    	   int cars_to_move = 0;
+	   for (int k = 0; k < local_road[k]; k++){
+		if (move_next_segment()){
+		     cars_to_move++;
+		}
+           }
+	   local_road[j] -= cars_to_move;
+           local_road[j + 1] += cars_to_move;	   
+    } 
+
+    if (rank == 0){
+	    local_road[0] += create_random_input();
+    } else {
+	    int entered = 0;
+	    MPI_Recv(&entered, 1, MPI_INT, rank - 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+	    local_road[0] += entered;
+    }
+
     // When needed, compute the overall sum
-    if (it%count_every == 0) {
+    if (i%count_every == 0) {
       int global_sum = 0;
 
       // TODO compute global sum
       
+      int local_sum = 0;
+      for (int j = 0; j < num_segments_per_proc; j++){
+              local_sum += local_road[j];
+      }
+
+      MPI_Reduce(&local_sum, &global_sum, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD); 
+      
       if (rank == 0) {
-	printf("Iteration: %d, sum: %d\n", it, global_sum);
+	printf("Iteration: %d, sum: %d\n", i, global_sum);
       }
     }
     
@@ -75,6 +106,8 @@ int main(int argc, char** argv) {
   }
 
   // TODO deallocate dynamic variables, if needed
+  
+  free(local_road);
   
   MPI_Finalize();
 }
